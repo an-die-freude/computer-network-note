@@ -88,11 +88,9 @@
 
 ![compute-networking_4](/img/compute-networking_4.png)
 
-#### 1.4 分组交换网中的时延、丢包和吞吐量
+#### 1.4 分组交换网
 
-##### 1.4.1 分组交换网中的时延
-
-​		当分组从一个节点/主机/路由器沿着这条路劲到后继节点/主机/路由器，该节点在沿途的每个节点经受了几种不同类型的时延，其中最重要的是**节点处理时延**、**排队时延**、**传输时延**和**传播时延**，这些时延的总和是**节点总时延**。
+​		当分组从一个节点/主机/路由器沿着这条路劲到后继节点/主机/路由器，该节点在沿途的每个节点经受了几种不同类型的时延，其中最重要的是**节点处理时延**、**排队时延**、**传输时延**和**传播时延**，这些时延的总和是**节点总时延**。若用$d_{proc}$、$d_{queue}$、$d_{trans}$、$d_{prop}$、$d_{nodal}$分别表示处理时延、排队时延、传输时延、传播时延和节点总时延，则$d_{nodal}=d_{proc}+d_{queue}+d_{trans}+d_{prop}$。
 
 ![compute-networking_5](/img/compute-networking_5.png)
 
@@ -100,19 +98,78 @@
 
 ​		在队列中，当分组在链路上等待传输时，需要经受**排队时延**。
 
-​		**传输时延**是路由器推出分组所需的时间，可表示为$\frac{L}{R}$，$L$表示分组的长度，$R(b/s)$表示链路的传输速率。
+​		**传输时延**是路由器推出分组所需的时间，可表示为$\frac{L}{R}$，$L$表示分组的长度，$R(b/s)$表示链路的传输速率，即从队列中退出1bit的速率。		
+
+​		$\frac{L\alpha}{R}$是**流量强度**，其中$\alpha(pkt/s)$表示分组到达队列的平均速率。流量强度主要用于衡量排队时延，==设计系统时流量强度不能大于1==。
 
 ​		1bit从一个路由器到另一个路由器所需的时间是**传播时延**。
 
-###### 1.4.1.1 排队时延与丢包
+​		源主机和目的主机之间有$N-1$台路由器，网络通畅^【排队时延可以忽略】^，节点时延累加起来，得到端到端时延：
+$$
+\begin{align}
+d_{end-end}&=N(d_{proc}+d_{trans}+d_{prop})\\&=N(d_{proc}+\frac{L}{R}+d_{prop})
+\end{align}
+$$
 
-​		
+#### 1.5 协议层次及其服务模型
 
-#### 附录 专业术语
+​		某层的**服务模型**是该层向上一层提供的服务。
+
+​		各层的所有协议被称为**协议栈**。
+
+![compute-networking_6](/img/compute-networking_6.png)
+
+##### 1.5.1 因特网协助栈
+
+|        | 功能                                           | 主要协议                | 分组名称 |
+| ------ | ---------------------------------------------- | ----------------------- | -------- |
+| 应用层 | 存留网络应用程序及它们的应用层协议             | HTTP(S)、SMTP、FTP和DNS | 报文     |
+| 传输层 | 应用程序端点之间传输应用层报文                 | TCP和UDP                | 报文段   |
+| 网络层 | 也称为IP层，将数据报从一台主机移动到另一台主机 | IP                      | 数据报   |
+| 链路层 | 沿着路劲将数据包传递给下一个节点               | 以太网、WiFi和DOCSIS    | 帧       |
+| 物理层 | 将帧中的一个个比特从一个节点移动到下一个节点   |                         | 比特     |
+
+##### 1.5.2 OSI模型
+
+​		相比因特网协议栈，OSI模型多出表示层和会话层。
+
+​		表示层的作用是使通信的应用程序能够解释交换数据的含义。这些服务包括数据压缩、数据加密和数据描述。
+
+​		会话层提供了数据交换的定界和同步功能，包括了建立检查点和恢复方案的方法。
+
+##### 1.5.3 封装
+
+![compute-networking_7](/img/compute-networking_7.png)
+
+​		在每一层，分组包括首部字段和**有效载荷字段**。
+
+#### 1.6 网络安全
+
+​		**病毒**是一种需要某种形式的用户交互来感染用户设备的恶意软件。
+
+​		**蠕虫**是一种无须任何明显用户交互就能进入设备的恶意软件。
+
+​		Dos攻击包括==弱点攻击==^【发送特殊的报文来控制或宕机】^、==带宽洪泛==^【发送大量分组】^和==连接洪泛==^【创建大量TCP连接】^。
+
+​		用来观察执行协议实体之间交换的报文的基本工具被称为**分组嗅探器**。
+
+​		**IP哄骗**指将具有虚假源地址的分组注入因特网。
+
+### 第二章 应用层
+
+2.1 应用层协议原理
+
+#### 附录 专业术语	
 
 > **active optical network terminator(AON)** 主动光纤网络
 >
+> **average throughput** 平均吞吐量
+>
 > **band-width** 带宽
+>
+> **botnet** 僵尸网络
+>
+> **bottleneck link** 瓶颈链路
 >
 > **cable internet access** 电缆因特网接入
 >
@@ -134,11 +191,17 @@
 >
 > **data center** 数据中心
 >
+> **datagram** 数据报
+>
+> **denial-of-service(DOS)** 拒绝服务
+>
 > **digital subscriber line(DSL)** 数字用户线
 >
 > **distributed application** 分布式应用程序
 >
 > **edge router** 边缘路由器
+>
+> **encapsulation** 封装
 >
 > **end system** 端系统
 >
@@ -147,6 +210,8 @@
 > **fiber to the home(FTTH)** 光纤到户
 >
 > **forwarding table** 转发表
+>
+> **frame** 帧
 >
 > **frequency-division multiplexing(FDM)** 频分复用
 >
@@ -158,6 +223,8 @@
 >
 > **hybrid fiber coax(HFC)** 混合光纤同轴
 >
+> **instantaneous throughput** 瞬时吞吐量
+>
 > **internet exchange point(IXP)** 因特网交换点
 >
 > **internet engineering task force(IETF)** 因特网工程任务组
@@ -168,17 +235,25 @@
 >
 > **internet standard** 因特网标准
 >
+> **IP spoofing** IP哄骗
+>
 > **link-layer switch** 链路层交换机
+>
+> **layer** 分层
 >
 > **long-term evolution(LTE)** 长期演进
 >
 > **low-earth orbiting(LEO)** 近地轨道
+>
+> **malware** 恶意软件
 >
 > **message** 报文
 >
 > **multi-home** 多宿
 >
 > **nodal processing delay** 节点处理时延
+>
+> **open system interconnection reference model(OSI model)** 开放式系统互联网通信参考模型
 >
 > **optical Carrier(OC)** 光载波
 >
@@ -194,6 +269,8 @@
 >
 > **packet loss** 分组丢包
 >
+> **packet sniffer** 分组嗅探器
+>
 > **packet switch** 分组交换机
 >
 > **packet switching** 分组交换
@@ -201,6 +278,8 @@
 > **passive optical network(PON)** 被动光纤网络
 >
 > **path** 路径
+>
+> **payload field** 有效载荷字段
 >
 > **peer** 对等
 >
@@ -222,6 +301,8 @@
 >
 > **router** 路由器
 >
+> **segment** 报文端
+>
 > **server** 服务器
 >
 > **shared medium** 共享媒体
@@ -237,6 +318,8 @@
 > **time-division multiplexing(TDM)**  时分复用
 >
 > **tier-1 ISP** 第一层ISP
+>
+> **top-down approach** 自顶向下方方法
 >
 > **total nodal delay** 节点总时延
 >
