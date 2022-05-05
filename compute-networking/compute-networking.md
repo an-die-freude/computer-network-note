@@ -111,6 +111,8 @@ d_{end-end}&=N(d_{proc}+d_{trans}+d_{prop})\\&=N(d_{proc}+\frac{L}{R}+d_{prop})
 \end{align}
 $$
 
+​		**吞吐量**是进程交互比特的速率。
+
 #### 1.5 协议层次及其服务模型
 
 ​		某层的**服务模型**是该层向上一层提供的服务。
@@ -119,15 +121,15 @@ $$
 
 ![compute-networking_6](/img/compute-networking_6.png)
 
-##### 1.5.1 因特网协助栈
+##### 1.5.1 因特网协议栈
 
-|        | 功能                                           | 主要协议                | 分组名称 |
-| ------ | ---------------------------------------------- | ----------------------- | -------- |
-| 应用层 | 存留网络应用程序及它们的应用层协议             | HTTP(S)、SMTP、FTP和DNS | 报文     |
-| 传输层 | 应用程序端点之间传输应用层报文                 | TCP和UDP                | 报文段   |
-| 网络层 | 也称为IP层，将数据报从一台主机移动到另一台主机 | IP                      | 数据报   |
-| 链路层 | 沿着路劲将数据包传递给下一个节点               | 以太网、WiFi和DOCSIS    | 帧       |
-| 物理层 | 将帧中的一个个比特从一个节点移动到下一个节点   |                         | 比特     |
+|        | 功能                                           | 主要协议             | 分组名称 |
+| ------ | ---------------------------------------------- | -------------------- | -------- |
+| 应用层 | 存留网络应用程序及它们的应用层协议             | HTTP、SMTP、FTP和DNS | 报文     |
+| 传输层 | 应用程序端点之间传输应用层报文                 | TCP和UDP             | 报文段   |
+| 网络层 | 也称为IP层，将数据报从一台主机移动到另一台主机 | IP                   | 数据报   |
+| 链路层 | 沿着路劲将数据包传递给下一个节点               | 以太网、WiFi和DOCSIS | 帧       |
+| 物理层 | 将帧中的一个个比特从一个节点移动到下一个节点   |                      | 比特     |
 
 ##### 1.5.2 OSI模型
 
@@ -141,7 +143,7 @@ $$
 
 ![compute-networking_7](/img/compute-networking_7.png)
 
-​		在每一层，分组包括首部字段和**有效载荷字段**。
+​		在每一层，分组包括首部字段和**有效载荷字段**^【通常是上一层的分组】^。
 
 #### 1.6 网络安全
 
@@ -149,7 +151,7 @@ $$
 
 ​		**蠕虫**是一种无须任何明显用户交互就能进入设备的恶意软件。
 
-​		Dos攻击包括==弱点攻击==^【发送特殊的报文来控制或宕机】^、==带宽洪泛==^【发送大量分组】^和==连接洪泛==^【创建大量TCP连接】^。
+​		**Dos攻击**包括==弱点攻击==^【发送特殊的报文来控制或宕机】^、==带宽洪泛==^【发送大量分组】^和==连接洪泛==^【创建大量TCP连接】^。
 
 ​		用来观察执行协议实体之间交换的报文的基本工具被称为**分组嗅探器**。
 
@@ -157,15 +159,92 @@ $$
 
 ### 第二章 应用层
 
-2.1 应用层协议原理
+#### 2.1 应用层协议原理
 
-#### 附录 专业术语	
+​		**套接字**是应用程序进程和传输层协议之间的接口。
+
+​		应用程序开发者可以通过套接字控制应用层的一切，但是对传输层的控制仅限于选择协议和设定几个传输层参数。
+
+​		当进程向另一台主机的进程发送分组时需要定义目的主机的地址和目的主机中接收进程的标识符。		
+
+​		传输层为应用层提供的服务可分为四类：==可靠数据传输==、==吞吐量==、==定时==和==安全性==。
+
+​		**带宽敏感的应用**具有吞吐量要求，而**弹性应用**能够根据可用的带宽。
+
+​		**应用层协议**定义了运行在不同端系统上的应用程序进程如何相互传递报文：
+
+​		﹡交互的报文类型
+
+​		﹡各种报文类型的语法
+
+​		﹡字段的语义
+
+​		﹡确定一个进程何时以及如何发送报文，对报文进行响应的规则
+
+#### 2.2 HTTP
+
+​		Web的应用层协议是**HTTP**。
+
+​		HTTP使用TCP作为它的支撑传输协议。
+
+​		HTTP服务器不保存关于客户端的任何信息，故HTTP是一个**无状态协议**。为了识别客户端，HTTP使用了cookie。
+
+​		**持续连接**指一个TCP可以传输多个HTTP请求和响应。
+
+​		**非持续连接**指一个TCP只能传输一个HTTP请求/响应对。
+
+​		**Web缓存器**，也称为**代理服务器**，能够代表Web服务器来满足HTTP请求的网络实体。
+
+​		HTTP的**条件GET**机制可以解决Web缓存器缓存的数据不是最新的问题。如果请求报文是GET方法且请求报文的首部行包括`If-Modified-Since`，该报文就算条件GET请求报文。
+
+##### 2.2.1 HTTP请求报文
+
+```http
+GET /somedir/page.html HTTP/2
+Host: www.test.com
+User-Agent: Mozilla/5.0
+Accept: */*
+Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+```
+
+​		HTTP请求报文的第一行是**请求行**。请求行包括方法字段、URL字段和HTTP版本字段。
+
+​		HTTP请求报文第一行之后的行是**首部行**。
+
+![compute-networking_8](/img/compute-networking_8.png)
+
+##### 2.2.2 HTTP响应报文
+
+```http
+HTTP/2 200 OK
+content-length: 5107
+content-type: text/javascript; charset=utf-8
+content-encoding: br
+last-modified: Wed, 03 Nov 2021 01:12:45 GMT
+server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
+```
+
+​		HTTP响应报文的第一行是**状态行**。请求行包括协议版本字段、状态码字段和相应状态字段。
+
+​		HTTP响应报文第一行之后的行是**首部行**。
+
+![compute-networking_9](/img/compute-networking_9.png)
+
+##### 2.2.3 条件GET
+
+### 附录1 专业术语
 
 > **active optical network terminator(AON)** 主动光纤网络
+>
+> **application programming interface(API)** 应用程序编程接口
 >
 > **average throughput** 平均吞吐量
 >
 > **band-width** 带宽
+>
+> **bandwidth-sensitive application** 带宽敏感的应用
 >
 > **botnet** 僵尸网络
 >
@@ -182,6 +261,8 @@ $$
 > **circuit switching** 电路交换
 >
 > **communication link** 通信链路
+>
+> **content distribution network(CDN)** 内容分发网络
 >
 > **content provider network** 内容提供商网络
 >
@@ -207,6 +288,8 @@ $$
 >
 > **end-to-end connection** 端到端连接
 >
+> **elastic application** 弹性应用
+>
 > **fiber to the home(FTTH)** 光纤到户
 >
 > **forwarding table** 转发表
@@ -219,9 +302,13 @@ $$
 >
 > **guided media** 导引型媒体
 >
+> **header line** 首部行
+>
 > **host** 主机
 >
 > **hybrid fiber coax(HFC)** 混合光纤同轴
+>
+> **hyper text transfer protocol(HTTP)** 超文本传输协议
 >
 > **instantaneous throughput** 瞬时吞吐量
 >
@@ -243,6 +330,8 @@ $$
 >
 > **long-term evolution(LTE)** 长期演进
 >
+> **loss-tolerant application** 容忍丢失的应用
+>
 > **low-earth orbiting(LEO)** 近地轨道
 >
 > **malware** 恶意软件
@@ -252,6 +341,8 @@ $$
 > **multi-home** 多宿
 >
 > **nodal processing delay** 节点处理时延
+>
+> **non-persistent connection** 非持续连接
 >
 > **open system interconnection reference model(OSI model)** 开放式系统互联网通信参考模型
 >
@@ -283,6 +374,8 @@ $$
 >
 > **peer** 对等
 >
+> **persistent connection** 持续连接
+>
 > **point of presence(POP)** 存在点
 >
 > **propagation delay** 传播时延
@@ -295,7 +388,13 @@ $$
 >
 > **queuing delay** 排队时延
 >
+> **reliable data transfer** 可靠数据传输
+>
 > **request for comment(RFC)** 请求评论
+>
+> **request line** 请求行
+>
+> **round-trip time(RTT)** 往返时间
 >
 > **route** 路径
 >
@@ -309,9 +408,13 @@ $$
 >
 > **silent period** 静默期
 >
-> **socket interface** 套接字接口
+> **socket** 套接字
+>
+> **source sockets layer** 安全套接字层
 >
 > **splitter** 分配器
+>
+> **stateless protocol** 无状态协议
 >
 > **store-and-forward transmission** 存储转发传输
 >
@@ -334,3 +437,11 @@ $$
 > **unguided media** 非导引型媒体
 >
 > **unshielded twisted pair(UTP)** 无屏蔽双绞线
+
+### 附录2 相关文档
+
+#### HTTP
+
+HTTP报文格式：RFC 1945、RFC 2616、RFC 7540
+
+cookie相关：RFC 6265
