@@ -410,7 +410,7 @@ $$
 
 ##### 2.6.2 CDN
 
-​		**CDN**分布在多个地理位置的服务器上，并且将用户请求定向到一个时延更低的CDN。
+​		**CDN**分布在多个地理位置的服务器上，并且将用户请求重定向到一个时延更低的CDN。
 
 ​		CDN分为**专用CDN**和**第三方CDN**，专用CDN由内容提供商自己拥有，第三方CDN分发多个内容提供商的内容。
 
@@ -420,7 +420,27 @@ $$
 
 ​		﹡客邀被Limelight和很多其他CDN公司采用，该原则通过在少量的关键位置(通常是因特网交换点)建立大量集群来客邀ISP。相比深入，客邀的维护管理成本更低，但时延较高而且吞吐量较低。
 
-​		
+![compute-networking_16](/img/compute-networking_16.png)
+
+​		大多数CDN利用DNS来截获和重定向请求。
+
+​		1）客户端访问某Web网页。
+
+​		2）客户端访问该Web下的某个资源时，发送了对应的DNS请求。
+
+​		3）本地DNS服务器将DNS请求中继到该Web的权威DNS服务器，权威DNS服务器返回了CDN域下的主机名。
+
+​		4）本地DNS服务器通过CDN域下的主机名向CDN权威DNS服务器发送DNS请求，CDN权威DNS服务器返回了CDN服务器的IP地址。
+
+​		5）本地DNS服务器将IP地址返回给客户端。
+
+​		6）客户端通过IP地址与CDN服务器建立TCP连接并发送HTTP请求。
+
+​		CDN部署的核心都是**集群选择策略**，即动态地将请求重定向到CDN中的某个服务器集群/数据中心。
+
+​		较简单的选择策略是将请求重定向到(距离本地DNS服务器)**地理上最近**的集群。另一种选择策略是对DNS服务器和集群之间进行周期性的时延以及丢包**实时测量**来选择。
+
+#### 2.7 套接字
 
 ​		
 
@@ -464,6 +484,8 @@ $$
 >
 > **client** 客户端
 >
+> **cluster selection strategy** 集群选择策略
+>
 > **customer** 客户
 >
 > **data center** 数据中心
@@ -505,6 +527,8 @@ $$
 > **frame** 帧
 >
 > **frequency-division multiplexing(FDM)** 频分复用
+>
+> **geographically closest** 地理上最近
 >
 > **geostationary satellite** 同步卫星
 >
@@ -617,6 +641,8 @@ $$
 > **queuing delay** 排队时延
 >
 > **rarest first** 最稀缺优先
+>
+> **real-time measurement** 实时测量
 >
 > **reliable data transfer** 可靠数据传输
 >
