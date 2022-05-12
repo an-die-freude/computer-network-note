@@ -483,17 +483,43 @@ $$
 
 ​		由于无法确保链路的可靠和内存中的差错检测，UDP在端到端基础上的传输层进行差错检测，这种设计被称为**端到端原则**，即同样功能的实现成本在较低级别相比较高级别可能较高。
 
-#### 3.2 TDP
+#### 3.2 可靠数据传输
 
+![compute-networking_19](/img/compute-networking_19.png)
 
+##### 3.2.1 rdt1.0
 
-​		
+![compute-networking_20](/img/compute-networking_20.png)
+
+​		rdt1.0协议指经完全可靠信道的可靠数据传输，故接收端就不需要提供任何反馈信息给发送方。
+
+​		FSM的初始状态用虚线表示。发送端和接收端的FSM都只有一个状态，故变迁必定是从一个状态返回到本身。
+
+​		较高层应用调用发送端的过程中，发送端只通过`rdt_send(data)`接收数据，经由`make_pkt(data)`产生一个包含该数据的分组，并将分组发送到信道中。
+
+​		较低层协议调用接收端的过程中，接收端通过`rdt_rcv(packet)`从底层信道接收一个分组，经由`extract(packet,data)`取出数据，并通过`deliver_data(data)`将数据传输给较高层。
+
+##### 3.2.2 rdt2.0
+
+​		通过**肯定确认**或**否定确认**来让发送端知道那些内容被正确接收或接收有误需要重传的可靠传输协议称为**自动重传请求**协议。自动重传请求协议还需要==差错检测==、==接收方反馈==^【用1bit来表示，0是NAK，1是ACK】^和==重传==来处理比特差错的情况。
+
+![compute-networking_21](/img/compute-networking_21.png)
+
+​		rdt2.0相比rdt1.0，加入了差错检测和肯定/否定确认。
+
+​		当发送端等待ACK/NCK时不能从上层获取数据或发送分组，故rdt2.0被称为**停等**协议。
+
+​		发送端有两个状态。在左边的状态中，发送端正在等待上层调用。当出现`rdt_send(data)`时，发送端将通过`make_pkt(data,checksum)`产生一个包含数据和校验和的分组，经由`udt_send(sndpkt)`发送该分组。在右边的状态中，发送端正在等待接收方回传的ACK/NAK。若收到ACK分组，即`rdt_rcv(rcvpkt) && isACK(rcvpkt)`，发送端会回到等待上层调用的状态。若收到NAK分组，即`rdt_rcv(rcvpkt) && isNAK(rcvpkt)`，发送端会重传分组并等待接收回传的ACK/NAK。
+
+​		接收端只有一个状态。当分组到达时，接收端回传ACK/NAK，即`rdt_rcv(rcvpkt) && notcorrupt(rcvpkt)`或`rdt_rcv(rcvpkt) && corrupt(rcvpkt)`。
 
 ### 附录1 专业术语
 
 > **active optical network terminator(AON)** 主动光纤网络
 >
 > **application programming interface(API)** 应用程序编程接口
+>
+> **automatic repeat request(ARQ)** 自动重传请求
 >
 > **average throughput** 平均吞吐量
 >
@@ -504,6 +530,8 @@ $$
 > **Berkeley Internet Name Domain(BIND/NAMED)** DNS服务器软件
 >
 > **best-effort delivery service** 尽力而为交付服务
+>
+> **bidirectional data transfer** 双向/全双工数据传输
 >
 > **botnet** 僵尸网络
 >
@@ -579,6 +607,8 @@ $$
 >
 > **file transfer protocol(FTP)** 文件传输协议
 >
+> **finite-state machine(FSM)** 有限状态机
+>
 > **forwarding table** 转发表
 >
 > **frame** 帧
@@ -643,6 +673,8 @@ $$
 >
 > **multi-home** 多宿
 >
+> **negative acknowledgment(NAK)** 否定确认
+>
 > **net file system(NFS)** 网络文件系统
 >
 > **network architecture** 网络体系结构
@@ -686,6 +718,8 @@ $$
 > **persistent connection** 持续连接
 >
 > **point of presence(POP)** 存在点
+>
+> **positive acknowledgment(ACK)** 肯定确认
 >
 > **post office protocol-version 3(POP3)** 第三版邮局
 >
@@ -745,6 +779,8 @@ $$
 >
 > **stateless protocol** 无状态协议
 >
+> **stop-and-wait** 停等
+>
 > **store-and-forward transmission** 存储转发传输
 >
 > **time-division multiplexing(TDM)**  时分复用
@@ -776,6 +812,8 @@ $$
 > **unchoked** 疏通
 >
 > **unguided media** 非导引型媒体
+>
+> **unidirectional data transfer** 单向/半双工数据传输
 >
 > **unreliable service** 不可靠服务
 >
