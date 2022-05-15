@@ -210,7 +210,7 @@ $$
 
 ​		HTTP的**条件GET**机制可以解决Web缓存器缓存的数据陈旧的问题。
 
-​		HTTP主要是一个**拉协议**，TCP连接是由接收方发起。
+​		HTTP主要是一个**拉协议**，TCP连接是由接收端发起。
 
 ##### 2.2.1 HTTP请求报文
 
@@ -276,7 +276,7 @@ server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
 
 ​		SMTP是因特网电子邮件中主要的应用层协议。它限制了邮件的报文(不只是首部)只能采用7-bit ASCII表示，若报文包含非7-bit ASCII字符或二进制数据，需要进行7 bit ASCII编码。
 
-​		SMTP是**推协议**，TCP连接是发送方发起的。
+​		SMTP是**推协议**，TCP连接是发送端发起的。
 
 ```ini
 S: 220 client
@@ -479,7 +479,7 @@ $$
 
 ![compute-networking_18](/img/compute-networking_18.png)
 
-​		发送方在计算校验和时需要先加上伪首部并将校验和字段置零，将伪首部、首部和应用数据转换成16位二进制(不足部分填充零)并求和，求和时需要回卷(如果进位到第17位则将结果加一)，将和取反得到校验和，发送方将设置校验和并去掉伪首部。接收方计算校验和方式类似于接收方(不需要将校验和置零)，最后结果全为一则说明数据无误，否则警告。
+​		发送端在计算校验和时需要先加上伪首部并将校验和字段置零，将伪首部、首部和应用数据转换成16位二进制(不足部分填充零)并求和，求和时需要回卷(如果进位到第17位则将结果加一)，将和取反得到校验和，发送端将设置校验和并去掉伪首部。接收端计算校验和方式类似于发送端(不需要将校验和置零)，最后结果全为一则说明数据无误，否则警告。
 
 ​		由于无法确保链路的可靠和内存中的差错检测，UDP在端到端基础上的传输层进行差错检测，这种设计被称为**端到端原则**，即同样功能的实现成本在较低级别相比较高级别可能较高。
 
@@ -491,7 +491,7 @@ $$
 
 ![compute-networking_20](/img/compute-networking_20.png)
 
-​		rdt1.0协议指经完全可靠信道的可靠数据传输，故接收端就不需要提供任何反馈信息给发送方。
+​		rdt1.0协议指经完全可靠信道的可靠数据传输，故接收端就不需要提供任何反馈信息给发送端。
 
 ​		FSM的初始状态用虚线表示。发送端和接收端的FSM都只有一个状态，故变迁必定是从一个状态返回到本身。
 
@@ -501,7 +501,7 @@ $$
 
 ##### 3.2.2 rdt2.0
 
-​		通过**肯定确认**或**否定确认**来让发送端知道那些内容被正确接收或接收有误需要重传的可靠传输协议称为**自动重传请求**协议。自动重传请求协议还需要==差错检测==、==接收方反馈==^【用1bit来表示，0是NAK，1是ACK】^和==重传==来处理比特差错的情况。
+​		通过**肯定确认**或**否定确认**来让发送端知道那些内容被正确接收或接收有误需要重传的可靠传输协议称为**自动重传请求**协议。自动重传请求协议还需要==差错检测==、==接收端反馈==^【用1bit来表示，0是NAK，1是ACK】^和==重传==来处理比特差错的情况。
 
 ![compute-networking_21](/img/compute-networking_21.png)
 
@@ -509,13 +509,45 @@ $$
 
 ​		当发送端等待ACK/NCK时不能从上层获取数据或发送分组，故rdt2.0被称为**停等**协议。
 
-​		发送端有两个状态。在左边的状态中，发送端正在等待上层调用。当出现`rdt_send(data)`时，发送端将通过`make_pkt(data,checksum)`产生一个包含数据和校验和的分组，经由`udt_send(sndpkt)`发送该分组。在右边的状态中，发送端正在等待接收方回传的ACK/NAK。若收到ACK分组，即`rdt_rcv(rcvpkt) && isACK(rcvpkt)`，发送端会回到等待上层调用的状态。若收到NAK分组，即`rdt_rcv(rcvpkt) && isNAK(rcvpkt)`，发送端会重传分组并等待接收回传的ACK/NAK。
+​		发送端有两个状态。在左边的状态中，发送端正在等待上层调用。当出现`rdt_send(data)`时，发送端将通过`make_pkt(data,checksum)`产生一个包含数据和校验和的分组，经由`udt_send(sndpkt)`发送该分组。在右边的状态中，发送端正在等待接收端回传的ACK/NAK。若收到ACK分组，即`rdt_rcv(rcvpkt) && isACK(rcvpkt)`，发送端会回到等待上层调用的状态。若收到NAK分组，即`rdt_rcv(rcvpkt) && isNAK(rcvpkt)`，发送端会重传分组并等待接收回传的ACK/NAK。
 
 ​		接收端只有一个状态。当分组到达时，接收端回传ACK/NAK，即`rdt_rcv(rcvpkt) && notcorrupt(rcvpkt)`或`rdt_rcv(rcvpkt) && corrupt(rcvpkt)`。
+
+​		但是rdt2.0忽视了ACK/NAK分组受损的情况，解决这一问题的简单方法就是添加一个新字段来表示发送数据分组的**序列号**。
+
+![compute-networking_22](/img/compute-networking_22.png)
+
+​		rdt2.1是rdt2.0的修订版，rdt2.1的发送端和接收端FSM的状态数都是以前的两倍，因为需要反映出目前分组的序列号。rdt2.1使用了接收端到发送端的ACK/NAK。当收到失序的分组时，接收端回传ACK。当收到受损的分组时，接收端回传NAK。
+
+![compute-networking_23](/img/compute-networking_23.png)
+
+​		rdt2.2相比rdt2.1，rdt2.2无NAK，而是对上一次正确接收的分组回传ACK。发送端收**冗余ACK**后，就知道了接收端没有正确接收到冗余ACK对应的分组后的分组。因此，ACK报文需要一个序列号字段。
+
+##### 3.2.3 rdt3.0
+
+![compute-networking_24](/img/compute-networking_24.png)
+
+​		rdt3.0是用于具有比特差错的丢包信道的协议。通过在发送端中加入**倒数定时器**来解决超时/丢包问题，接收端与rdt2.2相同。
+
+​		因为分组序列号在0和1之间交替，rdt3.0也被称为**比特交替协议**。
+
+##### 3.2.4 流水线可靠数据传输协议
+
+![compute-networking_25](/img/compute-networking_25.png)
+
+​		停等协议存在一定的性能问题，简单的解决方式就算不使用停等，运行发送方发送多个分组而无线等待。因为许多从发送端到接收端的分组可以被看出是填充到一条流水线，故这种技术被称为**流水线**。
+
+​		流水线需要可靠数据传输协议增加序列号的范围和发送/接收端缓存分组，而这些取决于差错恢复。流水线的差错恢复包括**回退N步**和**选择重传**。
+
+##### 3.2.5 回退N步
+
+​		
 
 ### 附录1 专业术语
 
 > **active optical network terminator(AON)** 主动光纤网络
+>
+> **alternating-bit protocol** 比特交替协议
 >
 > **application programming interface(API)** 应用程序编程接口
 >
@@ -551,6 +583,10 @@ $$
 >
 > **circuit switching** 电路交换
 >
+> **client** 客户端
+>
+> **cluster selection strategy** 集群选择策略
+>
 > **communication link** 通信链路
 >
 > **congestion control** 拥塞控制
@@ -559,9 +595,7 @@ $$
 >
 > **content provider network** 内容提供商网络
 >
-> **client** 客户端
->
-> **cluster selection strategy** 集群选择策略
+> **countdown timer** 倒数计时器
 >
 > **customer** 客户
 >
@@ -584,6 +618,8 @@ $$
 > **DNS caching** DNS缓存
 >
 > **domain name system(DNS)** 域名系统
+>
+> **duplicate data packet** 冗余数据分组
 >
 > **dynamic adaptive streaming over HTTP(DASH)** 经HTTP的动态适应流
 >
@@ -618,6 +654,8 @@ $$
 > **geographically closest** 地理上最近
 >
 > **geostationary satellite** 同步卫星
+>
+> **go-back-n(GBN)** 回退N步
 >
 > **guided media** 导引型媒体
 >
@@ -717,6 +755,8 @@ $$
 >
 > **persistent connection** 持续连接
 >
+> **pipelining** 流水线
+>
 > **point of presence(POP)** 存在点
 >
 > **positive acknowledgment(ACK)** 肯定确认
@@ -741,7 +781,7 @@ $$
 >
 > **real-time measurement** 实时测量
 >
-> **reliable data transfer** 可靠数据传输
+> **reliable data transfer(RDT)** 可靠数据传输
 >
 > **request for comment(RFC)** 请求评论
 >
@@ -758,6 +798,8 @@ $$
 > **secure shell(SSH)** 安全外壳
 >
 > **segment** 报文段
+>
+> **selective repeat(SR)** 选择重传
 >
 > **server** 服务器
 >
@@ -822,6 +864,8 @@ $$
 > **user agent** 用户代理
 >
 > **user datagram protocol(UDP)** 用户数据报协议
+>
+> **utilization** 利用率
 >
 > **well-known port number** 周知端口号
 
