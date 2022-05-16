@@ -48,13 +48,13 @@
 
 ​		多数分组交换机在链路的输入的使用**存储转发传输**机制。存储转发传输是指在交换机能够开始向输出链路传输该分组的第一个比特之前，必须接收到整个分组。
 
-![compute-networking_1](/img/compute-networking_1.png)
+![store-and-forward_packet_switching](/img/store-and-forward_packet_switching.png)
 
 ​		通过有`N`条速度均为`R`的链路组成的路径，其中有`N-1`台路由器，则端到端时延：$d_{端到端}=N\frac{L}{R}$。
 
 ​		对于每条相连的链路，分组交换机有一个用来存储路由器准备发往该链路的分组的**输出缓存/队列**。
 
-![compute-networking_2](/img/compute-networking_2.png)
+![packet_switching](/img/packet_switching.png)
 
 ​		分组需要承受输出缓存的**排队时延**。
 
@@ -72,7 +72,7 @@
 
 ​		对于时分复用，时间被划分为固定期间的帧，并且每个帧又被划分为固定数量的时隙。当网络跨越一条链路创建一条连接时，网络在每个帧中为该连接指定一个时隙。
 
-![compute-networking_3](/img/compute-networking_3.png)
+![fdm_and_tdm](/img/fdm_and_tdm.png)
 
 ##### 1.3.3 网络的网络
 
@@ -86,13 +86,13 @@
 
 ​		**因特网交换点**是一个汇合点，多个ISP能够在这里一起对等。
 
-![compute-networking_4](/img/compute-networking_4.png)
+![interconnection_of_isps](/img/interconnection_of_isps.png)
 
 #### 1.4 分组交换网
 
 ​		当分组从一个节点/主机/路由器沿着这条路劲到后继节点/主机/路由器，该节点在沿途的每个节点经受了几种不同类型的时延，其中最重要的是**节点处理时延**、**排队时延**、**传输时延**和**传播时延**，这些时延的总和是**节点总时延**。若用$d_{proc}$、$d_{queue}$、$d_{trans}$、$d_{prop}$、$d_{nodal}$分别表示处理时延、排队时延、传输时延、传播时延和节点总时延，则$d_{nodal}=d_{proc}+d_{queue}+d_{trans}+d_{prop}$。
 
-![compute-networking_5](/img/compute-networking_5.png)
+![total_nodal_delay_of_router](/img/total_nodal_delay_of_router.png)
 
 ​		检查分组首部和决定将该分组导向何处所需要的时间是**处理时延**的一部分。
 
@@ -119,7 +119,7 @@ $$
 
 ​		各层的所有协议被称为**协议栈**。
 
-![compute-networking_6](/img/compute-networking_6.png)
+![internet_protocol_stack_and_osi_reference_model](/img/internet_protocol_stack_and_osi_reference_model.png)
 
 ##### 1.5.1 因特网协议栈
 
@@ -156,7 +156,7 @@ $$
 
 ##### 1.5.3 封装
 
-![compute-networking_7](/img/compute-networking_7.png)
+![encapsulation](/img/encapsulation.png)
 
 ​		在每一层，分组包括首部字段和**有效载荷字段**^【通常是上一层的分组】^。
 
@@ -228,7 +228,7 @@ Connection: keep-alive
 
 ​		HTTP请求报文第一行之后的行是**首部行**。
 
-![compute-networking_8](/img/compute-networking_8.png)
+![http_request_message_format](/img/http_request_message_format.png)
 
 ##### 2.2.2 HTTP响应报文
 
@@ -244,13 +244,13 @@ server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
 
 ​		HTTP响应报文第一行之后的行是**首部行**。
 
-![compute-networking_9](/img/compute-networking_9.png)
+![http_response_message_format](/img/http_response_message_format.png)
 
 ##### 2.2.3 条件GET
 
 ​		如果请求报文是GET方法且请求报文的首部行包括`If-modified-since`，该请求报文就是条件GET请求报文。
 
-![compute-networking_10](/img/compute-networking_10.png)
+![conditional_get](/img/conditional_get.png)
 
 ​		第三步中`If-modified-Since`的值等于第二步中`last-modified`的值，这表示Web服务器仅当指定日期之后该对象修改后才发送该对象，假设该对象在指定日期后没被修改，于是第四步中Web服务器向Web缓存器发送的响应报文中状态码为304且没有对象，表示Web缓存器可以转发缓存的该对象的副本。
 
@@ -258,7 +258,7 @@ server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
 
 ​		因特网电子邮件系统由**用户代理**、**邮件服务器**和**简单邮件传输协议**组成。
 
-![compute-networking_11](/img/compute-networking_11.png)
+![e-mail_protocols_and_their_communicating_entities](/img/e-mail_protocols_and_their_communicating_entities.png)
 
 ​		1）发件方调用用户代理撰写内容并发送邮件。
 
@@ -342,7 +342,7 @@ Subject: subject
 
 ​		﹡每个ISP都有一个本地DNS服务器/默认名称服务器
 
-![compute-networking_12](/img/compute-networking_12.png)
+![interaction_of_the_various_dns_servsers](/img/interaction_of_the_various_dns_servsers.png)
 
 ​		一般情况下，从请求主机到本地DNS服务器的查询是**递归查询**，其余的查询是**迭代查询**。
 
@@ -362,7 +362,7 @@ Subject: subject
 
 ​		对于某个主机名，若DNS服务器是它的权威DNS服务器，则该DNS服务器会有一条包含该主机名的A型记录。若DNS服务器不是它的权威服务器，则该DNS服务器会有一条该主机名所属域名的NS型记录，还会有一条包含该NS型记录中`Value`的A型记录，还可能会有一条包含该主机名的A型记录。
 
-![compute-networking_13](/img/compute-networking_13.png)
+![dns_message_format](/img/dns_message_format.png)
 
 ​		DNS报文分为查询和应答报文，报文格式相同。
 
@@ -382,7 +382,7 @@ Subject: subject
 
 ​		**分发时间**是所有$n$个对等方得到$f(bit)$文件的副本所需时间。
 
-![compute-networking_14](/img/compute-networking_14.png)
+![file_distribution](/img/file_distribution.png)
 
 ​		$D_{cs}$表示C/S体系结构的分发时间，其中服务器需要上传$n$个文件的副本，则
 $$
@@ -401,7 +401,7 @@ $$
 
 ​		参与文件分发的所有对等方的集合称为**洪流**。在一个洪流中的对等方彼此下载等大小的文件块，通常是256KB。每个洪流具有一个基础设施节点，称为**追踪器**。当有对等方加入洪流时需要向追踪器注册并周期性地通知是否在洪流中。
 
-​		![compute-networking_15](/img/compute-networking_15.png)
+![file_distribution_with_bittorrent](/img/file_distribution_with_bittorrent.png)
 
 ​		与对等方建立TCP连接的其他对等方称为该对等方的**邻居/邻近对等方**。
 
@@ -431,7 +431,7 @@ $$
 
 ​		﹡客邀被Limelight和很多其他CDN公司采用，该原则通过在少量的关键位置(通常是因特网交换点)建立大量集群来客邀ISP。相比深入，客邀的维护管理成本更低，但时延较高而且吞吐量较低。
 
-![compute-networking_16](/img/compute-networking_16.png)
+![dns_redirects_a_request_to_a_cdn_server](/img/dns_redirects_a_request_to_a_cdn_server.png)
 
 ​		大多数CDN利用DNS来截获和重定向请求。
 
@@ -469,7 +469,7 @@ $$
 
 ​		UDP在发送报文段前传输层实体间没有握手，故UDP被称为==无连接==的。
 
-![compute-networking_17](/img/compute-networking_17.png)
+![udp_segment_structure](/img/udp_segment_structure.png)
 
 ​		UDP首部有四个字段，每个字段由两个字节构成。
 
@@ -477,7 +477,7 @@ $$
 
 ​		﹡校验和用于差错检测。
 
-![compute-networking_18](/img/compute-networking_18.png)
+![udp_checksum](/img/udp_checksum.png)
 
 ​		发送端在计算校验和时需要先加上伪首部并将校验和字段置零，将伪首部、首部和应用数据转换成16位二进制(不足部分填充零)并求和，求和时需要回卷(如果进位到第17位则将结果加一)，将和取反得到校验和，发送端将设置校验和并去掉伪首部。接收端计算校验和方式类似于发送端(不需要将校验和置零)，最后结果全为一则说明数据无误，否则警告。
 
@@ -485,11 +485,11 @@ $$
 
 #### 3.2 可靠数据传输
 
-![compute-networking_19](/img/compute-networking_19.png)
+![reliable_data_transfer](/img/reliable_data_transfer.png)
 
 ##### 3.2.1 rdt1.0
 
-![compute-networking_20](/img/compute-networking_20.png)
+![rdt1.0](/img/rdt1.0.png)
 
 ​		rdt1.0协议指经完全可靠信道的可靠数据传输，故接收端就不需要提供任何反馈信息给发送端。
 
@@ -503,7 +503,7 @@ $$
 
 ​		通过**肯定确认**或**否定确认**来让发送端知道那些内容被正确接收或接收有误需要重传的可靠传输协议称为**自动重传请求**协议。自动重传请求协议还需要==差错检测==、==接收端反馈==^【用1bit来表示，0是NAK，1是ACK】^和==重传==来处理比特差错的情况。
 
-![compute-networking_21](/img/compute-networking_21.png)
+![rdt2.0](/img/rdt2.0.png)
 
 ​		rdt2.0相比rdt1.0，加入了差错检测和肯定/否定确认。
 
@@ -515,17 +515,17 @@ $$
 
 ​		但是rdt2.0忽视了ACK/NAK分组受损的情况，解决这一问题的简单方法就是添加一个新字段来表示发送数据分组的**序列号**。
 
-![compute-networking_22](/img/compute-networking_22.png)
+![rdt2.1](/img/rdt2.1.png)
 
 ​		rdt2.1是rdt2.0的修订版，rdt2.1的发送端和接收端FSM的状态数都是以前的两倍，因为需要反映出目前分组的序列号。rdt2.1使用了接收端到发送端的ACK/NAK。当收到失序的分组时，接收端回传ACK。当收到受损的分组时，接收端回传NAK。
 
-![compute-networking_23](/img/compute-networking_23.png)
+![rdt2.2](/img/rdt2.2.png)
 
 ​		rdt2.2相比rdt2.1，rdt2.2无NAK，而是对上一次正确接收的分组回传ACK。发送端收**冗余ACK**后，就知道了接收端没有正确接收到冗余ACK对应的分组后的分组。因此，ACK报文需要一个序列号字段。
 
 ##### 3.2.3 rdt3.0
 
-![compute-networking_24](/img/compute-networking_24.png)
+![rdt3.0_sender](/img/rdt3.0_sender.png)
 
 ​		rdt3.0是用于具有比特差错的丢包信道的协议。通过在发送端中加入**倒数定时器**来解决超时/丢包问题，接收端与rdt2.2相同。
 
@@ -533,15 +533,43 @@ $$
 
 ##### 3.2.4 流水线可靠数据传输协议
 
-![compute-networking_25](/img/compute-networking_25.png)
+![stop-and-wait_and_pipelined_sending](/img/stop-and-wait_and_pipelined_sending.png)
 
-​		停等协议存在一定的性能问题，简单的解决方式就算不使用停等，运行发送方发送多个分组而无线等待。因为许多从发送端到接收端的分组可以被看出是填充到一条流水线，故这种技术被称为**流水线**。
+​		停等协议存在一定的性能问题，简单的解决方式就是不使用停等，允许发送方发送多个分组而无须等待。因为许多从发送端到接收端的分组可以被看出是填充到一条流水线，故这种技术被称为**流水线**。
 
 ​		流水线需要可靠数据传输协议增加序列号的范围和发送/接收端缓存分组，而这些取决于差错恢复。流水线的差错恢复包括**回退N步**和**选择重传**。
 
 ##### 3.2.5 回退N步
 
-​		
+![sender's_view_of_sequence_numbers_in_gbn](/img/sender's_view_of_sequence_numbers_in_gbn.png)
+
+​		随着协议的运行，该窗口的序列号空间向前滑动，故$N$被称为窗口长度，GBN也被称为滑动窗口协议。
+
+​		$base$表示最早待确认的分组的序列号，$nextseqnum$表示最早的待发送的分组的序列号。
+
+​		$[0,base-1]$表示已被确认的分组，$[base,nextseqnum-1]$表示待确认的分组，$[nextseqnum,nextnum+N-1]$表示待发送的分组，$[nextnum+N,+\infty)$表示不可用的分组，直到当前流水线中待确认的分组确认。
+
+![extended_fsm_of_gbn](/img/extended_fsm_of_gbn.png)
+
+​		发送端必须响应==上层的调用==、==接收ACK==和==处理超时==。
+
+​		当上层调用`rdt_send()`时，发送端先检测发送窗口是否已满。若窗口未满则产生一个分组发送并更新对应的变量。若窗口已满则反馈上层。不存在待确认分组的情况下首次发送分组时会设置一个计时器。当收到ACK但仍存在待确认的分组时，计时器将重置。当不存在待确认的分组时停止计时器。
+
+​		接收端用$expectedseqnum$来表示按序待接收的分组的序列号。
+
+​		接收端对序列号为$n$的分组使用**累积确认**的方式，表明已正确收到序列号在$n$之前且包括$n$的所有分组。
+
+​		当接收端收到序列号为$n$的分组且上次交付给上层的分组的序列号是$n-1$时会对分组$n$回传ACK，否则丢弃该分组并对最近交付给上层的分组回传ACK。
+
+​		接收端会丢失所有失序分组，因为这些分组还会重传。
+
+![gbn_in_operation](/img/gbn_in_operation.png)
+
+##### 3.2.6 选择重传
+
+
+
+
 
 ### 附录1 专业术语
 
@@ -597,6 +625,8 @@ $$
 >
 > **countdown timer** 倒数计时器
 >
+> **cumulative acknowledgement** 累积确认
+>
 > **customer** 客户
 >
 > **data center** 数据中心
@@ -636,6 +666,8 @@ $$
 > **enter deep** 深入
 >
 > **elastic application** 弹性应用
+>
+> **event-based programming** 基于事件的编程
 >
 > **extend simple mail transfer protocol(ESMTP)** 扩展简单邮件传输协议
 >
@@ -810,6 +842,8 @@ $$
 > **simple mail transfer protocol(SMTP)** 简单邮件传输协议
 >
 > **simple network management protocol(SNMP)** 简单网络管理协议
+>
+> **sliding-window protocol** 滑动窗口协议
 >
 > **socket** 套接字
 >
