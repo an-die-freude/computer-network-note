@@ -591,7 +591,17 @@ $$
 
 ​		SR的窗口长度必须小于或等于序号去重后的数量的一半。
 
-#### 3.3 TCP
+#### 3.3 拥塞控制原理
+
+##### 3.3.1 拥塞原因与代价
+
+![single_hop_with_infinite_buffers](/img/single_hop_with_infinite_buffers.png)
+
+​		在两条连接共享无限缓存的单挑路由的的情况下，当分组的到达速率接近链路容量时，分组经历巨大的排队时延。
+
+​		
+
+#### 3.4 TCP
 
 ​		在进程发送数据之前，进程间必须握手，即相互发送一些预备报文段来设置确保数据传输的参数，故TCP是**面向连接的**。
 
@@ -613,13 +623,13 @@ $$
 
 ​		TCP的差错恢复机制是**选择性确认**，即有选择地确认乱序报文段。
 
-##### 3.3.1 TCP报文段结构
+##### 3.4.1 TCP报文段结构
 
 ![tcp_segment_structure](/img/tcp_segment_structure.png)
 
 ​		TCP报文段包括16位**源端口**、16位**目的端口**、32位**序号**、32位**确认序号**、4位**首部长度**、3位保留字段、9个标志位、16位**窗口长度**、16位**校验和**、16位**紧急指针**以及最多40字节的的选项字段。
 
-​		TCP将数据看成一个无结构且有序的字节流，通过字节流确定序号，序号是==报文段首字节的编号==。
+​		TCP将数据看成一个无结构且有序的字节流，通过字节流确定序号，序号是==报文段首字节的编号==。初始序号一般随机。
 
 ​		确认号是==下一次按序应接收报文段首字节的编号==。TCP只确认报文段有效载荷中到第一个丢失字节为止的字节，故TCP提供**累积确认**。当有效载荷为空时吗，确认号被**捎带**在报文段中。
 
@@ -639,9 +649,9 @@ $$
 
 ​		﹡**Reset/RST(R)**为1时表示重置连接。
 
-​		﹡**SYN(S)**为1时表示三次握手中建立连接。
+​		﹡**Synchronization/SYN(S)**为1时表示三次握手中建立连接。
 
-​		﹡**FIN(F)**为1时表示四次挥手中断开连接。
+​		﹡**Finish/FIN(F)**为1时表示四次挥手中断开连接。
 
 ​		选项字段包括8位Kind、可变的Length以及可变的Info。
 
@@ -661,7 +671,31 @@ $$
 
 ​		窗口长度用于流量控制服务。
 
-##### 3.3.2 超时
+##### 3.4.2 连接管理
+
+![three-way_handshake](/img/three-way_handshake.png)
+
+​		1）客户端向服务端发送**SYN(报文段)**，即报文段的有效载荷为空，`SYN`为1，客户端进入`SYN_SENT`。
+
+​		2）服务端收到SYN后为该连接分配TCP缓存和变量，再向客户端发送**SYNACK(报文段)**，即ACK报文段的`SYN`为1，最后服务端进入`SYN_RCVD`。
+
+​		3）客户端收到SYNACK后该连接分配TCP缓存和变量，再向服务端发送ACK，此时连接已建立，`SYN`置为0，最后服务端进入`ESTABLISHED`。服务端收到ACK后进入`ESTABLISHED`。
+
+![four-way_handshake](/img/four-way_handshake.png)
+
+​		1）客户端向服务端发送**FIN(报文段)**，即报文段的有效载荷为空，`FIN`为1，客户端进入`FIN_WAIT_1`。
+
+​		2）服务端收到FIN后发送ACK并进入`CLOSE_WAIT`。客户端收到ACK后进入`FIN_WAIT_2`。
+
+​		3）服务端向客户端发送FIN并进入`LAST_ACK`。
+
+​		4）客户端收到FIN后发送ACK并进入`TIME_wAIT`，同时设置计时器，到时后释放资源(包括端口号)并进入`CLOSED`。服务端收到ACK后释放资源并进入`CLOSED`。
+
+![tcp_state](/img/tcp_state.png)
+
+​		在TCP连接的生命周期中，运行在每台主机的TCP协议会在各种**TCP状态**间变迁。
+
+##### 3.4.3 超时
 
 ​		SampleRTT表示报文段从发送(交付给IP)到收到该报文段的确认所需时间。TCP不会为重传的报文段测量SampleRTT，仅仅为只需要传输一次的报文段测量。
 
@@ -677,7 +711,7 @@ $$
 
 ​		TimeoutInterval表示超时时间，公式为$TimeoutInterval=EstimatedRTT+4\times DevRTT$。
 
-##### 3.3.3 流量控制
+##### 3.4.4 流量控制
 
 ​		TCP用**流量控制服务**来使发送端的发送速率和接收端的读取速率相匹配，这一服务通过让==发送端==维护**接收窗口**^【表示接收端可用缓存空间】^的变量来实现。
 
@@ -697,6 +731,8 @@ $$
 
 ### 附录1 专业术语
 
+> **access point(AP)** 访问接入点
+>
 > **active optical network terminator(AON)** 主动光纤网络
 >
 > **alternating-bit protocol** 比特交替协议
@@ -842,6 +878,8 @@ $$
 > **hybrid fiber coax(HFC)** 混合光纤同轴
 >
 > **hyper text transfer protocol(HTTP)** 超文本传输协议
+>
+> **initial sequence number(ISN)** 初始序号
 >
 > **instantaneous throughput** 瞬时吞吐量
 >
