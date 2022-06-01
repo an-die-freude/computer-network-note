@@ -781,7 +781,7 @@ $$
 
 ​		TCP拥塞控制算法包括**慢启动**、**拥塞避免**和**快速恢复**。
 
-​		TCP拥塞控制被称为**加性增、乘性减**拥塞控制方式。加性增指在拥塞避免阶段$cwnd$的线性增加，乘性减指进入快速恢复阶段时$cwnd$的减半。
+​		TCP拥塞控制被称为**加性增、乘性减**拥塞控制方式。加性增指在拥塞避免阶段$cwnd$的线性增加，乘性减指进入快速恢复阶段时$cwnd$的减半，若结果不是整数则向下取整。
 
 ![fsm_of_tcp_congestion_control](img/fsm_of_tcp_congestion_control.png)
 
@@ -801,13 +801,30 @@ $$
 
 ###### 3.4.5.2 平均吞吐量
 
-​	当计算一个长存活期连接的平均吞吐量时，因为慢启动阶段通常很短，可以忽略。在一个RTT内，窗口长度是$w(B)$，发送速度大约是$\frac{w}{RTT}$。在出现丢包之前，每个RTT内$w=w+MSS$。用$W$表示出现丢包时$w$的值。
+​		当计算一个吞吐量较大的连接的平均吞吐量时，因为慢启动阶段和快速恢复阶段通常很短，都可以忽略，故可以认为该连接处于拥塞避免阶段。在一个RTT内，窗口长度是$w(B)$，吞吐量大约是$\frac{w}{RTT}$。在出现丢包之前，每个RTT内$w=w+MSS$。用$W$表示出现丢包时$w$的值。
+
+​		若在一段时间内平均吞吐量从$\frac{W}{2RTT}$线性增长到$\frac{W}{RTT}$，丢包仅出现了一次且发生在最后。
 $$
-一条连接的平均吞吐量=\frac{4W}{3RTT}
+\begin{align}
+Segment_{total}&=\frac{W}{2RTT}\times RTT+\frac{W+2}{2RTT}\times RTT+\cdots +\frac{W}{RTT}\times RTT\\
+&=(\frac{W}{4}+\frac{W}{2}) \times (\frac{W}{4}+\frac{1}{2})\\
+&=\frac{3W^2}{8}+\frac{3W}{4}\\
+\end{align}
 $$
-​		当计算一个高速连接的平均吞吐量时，在一个RTT内，窗口长度是$w(B)$，发送速度大约是$\frac{w}{RTT}$。丢包率为$L$。
+​		丢包率$L=\frac{Segment_{loss}}{Segment_{total}}$。
 $$
-一条连接的平均吞吐量=\frac{1.22\times MSS}{RTT\sqrt{L}}
+\begin{align}
+L&=\frac{1}{Segment_{total}}\\
+&=\frac{1}{\frac{3W^2}{8}+\frac{3W}{4}}\\
+&=\frac{8}{3W^2+6W}
+\end{align}
+$$
+​		由于${3W^2}>>{6W}$，$6W$可以忽略，故$W \approx \sqrt{\frac{8}{3L}}$。平均吞吐量是$\frac{3W}{4RTT}(MSS)$。
+$$
+\begin{align}
+平均吞吐量&=\frac{\sqrt{6}MSS}{2RTT\sqrt{L}}\\
+&\approx \frac{1.22\times MSS}{RTT\sqrt{L}}
+\end{align}
 $$
 
 ###### 3.4.5.3 公平性
@@ -822,9 +839,17 @@ $$
 
 ### 第四章 网络层
 
-​		
+​		网络层可以分为**数据平面**和**控制平面**。
 
-​		
+​		﹡数据平面即==路由器的功能==，用于从路由器的输入链路向输出链路转发数据报，包括传统的IP转发和通用转发。
+
+​		﹡控制平面即==网络范围的逻辑==，用于协调路由器间的转发动作，使得数据报最终沿着源主机和目的主机之间的路径进行端到端传输。
+
+​		**转发**是指将数据报从一个输入链路接口转移到适当的输出链路接口的路由器本地动作。转发所需时间通常为几纳秒，故通过硬件实现。
+
+​		**路由选择**是指确定数据报从源到目的地的端到端路径的网络范围处理过程。路由选择所需时间通常为几秒，故通过软件来实现。
+
+#### 4.1 路由器
 
 ### 附录1 专业术语
 
@@ -896,6 +921,8 @@ $$
 >
 > **content provider network** 内容提供商网络
 >
+> **control plane** 控制平面
+>
 > **countdown timer** 倒数计时器
 >
 > **cumulative acknowledgement** 累积确认
@@ -905,6 +932,8 @@ $$
 > **data center** 数据中心
 >
 > **data center TCP(DCTCP)** 数据中心TCP
+>
+> **data plane** 数据平面
 >
 > **datagram** 数据报
 >
@@ -965,6 +994,8 @@ $$
 > **file transfer protocol(FTP)** 文件传输协议
 >
 > **finite-state machine(FSM)** 有限状态机
+>
+> **forwarding** 转发
 >
 > **forwarding table** 转发表
 >
@@ -1126,11 +1157,15 @@ $$
 >
 > **resource record(RR)** 资源记录
 >
+> **retransmission time out(RTO)** 重传超时时间
+>
 > **round trip time(RTT)** 往返时间
 >
 > **route** 路径
 >
 > **router** 路由器
+>
+> **routing** 路由选择
 >
 > **secure shell(SSH)** 安全外壳
 >
@@ -1161,6 +1196,8 @@ $$
 > **slow start threshold(ssthresh)** 慢启动阈值
 >
 > **socket** 套接字
+>
+> **software defined network(SDN)** 软件定义网络
 >
 > **source port number field** 源端口号字段
 >
