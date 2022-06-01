@@ -48,13 +48,13 @@
 
 ​		多数分组交换机在链路的输入的使用**存储转发传输**机制。存储转发传输是指在交换机能够开始向输出链路传输该分组的第一个比特之前，必须接收到整个分组。
 
-![store-and-forward_packet_switching](/img/store-and-forward_packet_switching.png)
+![store-and-forward_packet_switching](img/store-and-forward_packet_switching.png)
 
 ​		通过有`N`条速度均为`R`的链路组成的路径，其中有`N-1`台路由器，则端到端时延：$d_{端到端}=N\frac{L}{R}$。
 
 ​		对于每条相连的链路，分组交换机有一个用来存储路由器准备发往该链路的分组的**输出缓存/队列**。
 
-![packet_switching](/img/packet_switching.png)
+![packet_switching](img/packet_switching.png)
 
 ​		分组需要承受输出缓存的**排队时延**。
 
@@ -72,7 +72,7 @@
 
 ​		对于时分复用，时间被划分为固定期间的帧，并且每个帧又被划分为固定数量的时隙。当网络跨越一条链路创建一条连接时，网络在每个帧中为该连接指定一个时隙。
 
-![fdm_and_tdm](/img/fdm_and_tdm.png)
+![fdm_and_tdm](img/fdm_and_tdm.png)
 
 ##### 1.3.3 网络的网络
 
@@ -86,13 +86,13 @@
 
 ​		**因特网交换点**是一个汇合点，多个ISP能够在这里一起对等。
 
-![interconnection_of_isps](/img/interconnection_of_isps.png)
+![interconnection_of_isps](img/interconnection_of_isps.png)
 
 #### 1.4 分组交换网
 
 ​		当分组从一个节点/主机/路由器沿着这条路劲到后继节点/主机/路由器，该节点在沿途的每个节点经受了几种不同类型的时延，其中最重要的是**节点处理时延**、**排队时延**、**传输时延**和**传播时延**，这些时延的总和是**节点总时延**。若用$d_{proc}$、$d_{queue}$、$d_{trans}$、$d_{prop}$、$d_{nodal}$分别表示处理时延、排队时延、传输时延、传播时延和节点总时延，则$d_{nodal}=d_{proc}+d_{queue}+d_{trans}+d_{prop}$。
 
-![total_nodal_delay_of_router](/img/total_nodal_delay_of_router.png)
+![total_nodal_delay_of_router](img/total_nodal_delay_of_router.png)
 
 ​		检查分组首部和决定将该分组导向何处所需要的时间是**处理时延**的一部分。
 
@@ -119,7 +119,7 @@ $$
 
 ​		各层的所有协议被称为**协议栈**。
 
-![internet_protocol_stack_and_osi_reference_model](/img/internet_protocol_stack_and_osi_reference_model.png)
+![internet_protocol_stack_and_osi_reference_model](img/internet_protocol_stack_and_osi_reference_model.png)
 
 ##### 1.5.1 因特网协议栈
 
@@ -156,7 +156,7 @@ $$
 
 ##### 1.5.3 封装
 
-![encapsulation](/img/encapsulation.png)
+![encapsulation](img/encapsulation.png)
 
 ​		在每一层，分组包括首部字段和**有效载荷字段**^【通常是上一层的分组】^。
 
@@ -228,7 +228,7 @@ Connection: keep-alive
 
 ​		HTTP请求报文第一行之后的行是**首部行**。
 
-![http_request_message_format](/img/http_request_message_format.png)
+![http_request_message_format](img/http_request_message_format.png)
 
 ##### 2.2.2 HTTP响应报文
 
@@ -244,13 +244,13 @@ server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
 
 ​		HTTP响应报文第一行之后的行是**首部行**。
 
-![http_response_message_format](/img/http_response_message_format.png)
+![http_response_message_format](img/http_response_message_format.png)
 
 ##### 2.2.3 条件GET
 
 ​		如果请求报文是GET方法且请求报文的首部行包括`If-modified-since`，该请求报文就是条件GET请求报文。
 
-![conditional_get](/img/conditional_get.png)
+![conditional_get](img/conditional_get.png)
 
 ​		第三步中`If-modified-Since`的值等于第二步中`last-modified`的值，这表示Web服务器仅当指定日期之后该对象修改后才发送该对象，假设该对象在指定日期后没被修改，于是第四步中Web服务器向Web缓存器发送的响应报文中状态码为304且没有对象，表示Web缓存器可以转发缓存的该对象的副本。
 
@@ -258,7 +258,7 @@ server: Windows-Azure-Blob/1.0 Microsoft-HTTPAPI/2.0
 
 ​		因特网电子邮件系统由**用户代理**、**邮件服务器**和**简单邮件传输协议**组成。
 
-![e-mail_protocols_and_their_communicating_entities](/img/e-mail_protocols_and_their_communicating_entities.png)
+![e-mail_protocols_and_their_communicating_entities](img/e-mail_protocols_and_their_communicating_entities.png)
 
 ​		1）发件方调用用户代理撰写内容并发送邮件。
 
@@ -342,7 +342,7 @@ Subject: subject
 
 ​		﹡每个ISP都有一个本地DNS服务器/默认名称服务器
 
-![interaction_of_the_various_dns_servsers](/img/interaction_of_the_various_dns_servsers.png)
+![interaction_of_the_various_dns_servsers](img/interaction_of_the_various_dns_servsers.png)
 
 ​		一般情况下，从请求主机到本地DNS服务器的查询是**递归查询**，其余的查询是**迭代查询**。
 
@@ -362,7 +362,7 @@ Subject: subject
 
 ​		对于某个主机名，若DNS服务器是它的权威DNS服务器，则该DNS服务器会有一条包含该主机名的A型记录。若DNS服务器不是它的权威服务器，则该DNS服务器会有一条该主机名所属域名的NS型记录，还会有一条包含该NS型记录中`Value`的A型记录，还可能会有一条包含该主机名的A型记录。
 
-![dns_message_format](/img/dns_message_format.png)
+![dns_message_format](img/dns_message_format.png)
 
 ​		DNS报文分为查询和应答报文，报文格式相同。
 
@@ -382,7 +382,7 @@ Subject: subject
 
 ​		**分发时间**是所有$n$个对等方得到$f(bit)$文件的副本所需时间。
 
-![file_distribution](/img/file_distribution.png)
+![file_distribution](img/file_distribution.png)
 
 ​		$D_{cs}$表示C/S体系结构的分发时间，其中服务器需要上传$n$个文件的副本，则
 $$
@@ -401,7 +401,7 @@ $$
 
 ​		参与文件分发的所有对等方的集合称为**洪流**。在一个洪流中的对等方彼此下载等大小的文件块，通常是256KB。每个洪流具有一个基础设施节点，称为**追踪器**。当有对等方加入洪流时需要向追踪器注册并周期性地通知是否在洪流中。
 
-![file_distribution_with_bittorrent](/img/file_distribution_with_bittorrent.png)
+![file_distribution_with_bittorrent](img/file_distribution_with_bittorrent.png)
 
 ​		与对等方建立TCP连接的其他对等方称为该对等方的**邻居/邻近对等方**。
 
@@ -431,7 +431,7 @@ $$
 
 ​		﹡客邀被Limelight和很多其他CDN公司采用，该原则通过在少量的关键位置(通常是因特网交换点)建立大量集群来客邀ISP。相比深入，客邀的维护管理成本更低，但时延较高而且吞吐量较低。
 
-![dns_redirects_a_request_to_a_cdn_server](/img/dns_redirects_a_request_to_a_cdn_server.png)
+![dns_redirects_a_request_to_a_cdn_server](img/dns_redirects_a_request_to_a_cdn_server.png)
 
 ​		大多数CDN利用DNS来截获和重定向请求。
 
@@ -477,13 +477,13 @@ $$
 
 ​		UDP在发送报文段前传输层实体间没有握手，故UDP被称为==无连接==的。
 
-![udp_segment_structure](/img/udp_segment_structure.png)
+![udp_segment_structure](img/udp_segment_structure.png)
 
 ​		UDP首部有四个字段，每个字段由2字节构成。
 
 ​		﹡长度字段即报文段中的字节数(首部+应用数据)。
 
-![checksum_of_udp](/img/checksum_of_udp.png)
+![checksum_of_udp](img/checksum_of_udp.png)
 
 ​		伪首部包括源IP地址、目的IP地址、填充0的保留字段、传输层协议号以及报文长度。TCP的传输层协议号是6，UDP的传输层协议号是17。
 
@@ -493,11 +493,11 @@ $$
 
 #### 3.2 可靠数据传输
 
-![reliable_data_transfer](/img/reliable_data_transfer.png)
+![reliable_data_transfer](img/reliable_data_transfer.png)
 
 ##### 3.2.1 rdt1.0
 
-![fsm_of_rdt1.0](/img/fsm_of_rdt1.0.png)
+![fsm_of_rdt1.0](img/fsm_of_rdt1.0.png)
 
 ​		rdt1.0协议指经完全可靠信道的可靠数据传输，故接收端就不需要提供任何反馈信息给发送端。
 
@@ -511,7 +511,7 @@ $$
 
 ​		通过**肯定确认**或**否定确认**来让发送端知道那些内容被正确接收或接收有误需要重传的可靠传输协议称为**自动重传请求**协议。自动重传请求协议还需要==差错检测==、==接收端反馈==^【用1位来表示，0是NAK，1是ACK】^和==重传==来处理比特差错的情况。
 
-![fsm_of_rdt2.0.0](/img/fsm_of_rdt2.0.png)
+![fsm_of_rdt2.0.0](img/fsm_of_rdt2.0.png)
 
 ​		rdt2.0相比rdt1.0，加入了差错检测和肯定/否定确认。
 
@@ -523,17 +523,17 @@ $$
 
 ​		但是rdt2.0忽视了ACK/NAK分组受损的情况，解决这一问题的简单方法就是添加一个新字段来表示发送数据分组的序号。
 
-![fsm_of_rdt2.1.png](/img/fsm_of_rdt2.1.png)
+![fsm_of_rdt2.1.png](img/fsm_of_rdt2.1.png)
 
 ​		rdt2.1是rdt2.0的修订版，rdt2.1的发送端和接收端FSM的状态数都是以前的两倍，因为需要反映出目前分组的序号。rdt2.1使用了接收端到发送端的ACK/NAK。当收到乱序的分组时，接收端回传ACK。当收到受损的分组时，接收端回传NAK。
 
-![fsm_of_rdt2.2](/img/fsm_of_rdt2.2.png)
+![fsm_of_rdt2.2](img/fsm_of_rdt2.2.png)
 
 ​		rdt2.2相比rdt2.1，rdt2.2无NAK，而是对上一次正确接收的分组回传ACK。发送端收**冗余ACK**后，就知道了接收端没有正确接收到冗余ACK对应的分组后的分组。因此，ACK报文需要一个序号字段。
 
 ##### 3.2.3 rdt3.0
 
-![fsm_of_rdt3.0_sender](/img/fsm_of_rdt3.0_sender.png)
+![fsm_of_rdt3.0_sender](img/fsm_of_rdt3.0_sender.png)
 
 ​		rdt3.0是用于具有比特差错的丢包信道的协议。通过在发送端中加入**倒数计时器**来解决超时/丢包问题，接收端与rdt2.2相同。
 
@@ -541,7 +541,7 @@ $$
 
 ##### 3.2.4 流水线可靠数据传输协议
 
-![stop-and-wait_and_pipelined_sending](/img/stop-and-wait_and_pipelined_sending.png)
+![stop-and-wait_and_pipelined_sending](img/stop-and-wait_and_pipelined_sending.png)
 
 ​		停等协议存在一定的性能问题，简单的解决方式就是不使用停等，允许发送方发送多个分组而无须等待。因为许多从发送端到接收端的分组可以被看出是填充到一条流水线，故这种技术被称为**流水线**。
 
@@ -549,7 +549,7 @@ $$
 
 ##### 3.2.5 回退N步
 
-![sender_view_of_sequence_numbers_in_gbn](/img/sender_view_of_sequence_numbers_in_gbn.png)
+![sender_view_of_sequence_numbers_in_gbn](img/sender_view_of_sequence_numbers_in_gbn.png)
 
 ​		随着协议的运行，该窗口的序号空间向前滑动，故$N$被称为窗口长度，GBN也被称为滑动窗口协议。
 
@@ -557,7 +557,7 @@ $$
 
 ​		$[0,base-1]$表示已被确认的分组，$[base,nextseqnum-1]$表示待确认的分组，$[nextseqnum,nextnum+N-1]$表示待发送的分组，$[nextnum+N,+\infty)$表示不可用的分组，直到当前流水线中待确认的分组确认。
 
-![extended_fsm_of_gbn](/img/extended_fsm_of_gbn.png)
+![extended_fsm_of_gbn](img/extended_fsm_of_gbn.png)
 
 ​		发送端必须响应==上层的调用==、==接收ACK==和==处理超时==。
 
@@ -571,11 +571,11 @@ $$
 
 ​		接收端会丢失所有乱序分组，因为这些分组还会重传。
 
-![gbn_operation](/img/gbn_operation.png)
+![gbn_operation](img/gbn_operation.png)
 
 ##### 3.2.6 选择重传
 
-![sender_and_receiver_views_of_sequence_numbers_in_sr](/img/sender_and_receiver_views_of_sequence_numbers_in_sr.png)
+![sender_and_receiver_views_of_sequence_numbers_in_sr](img/sender_and_receiver_views_of_sequence_numbers_in_sr.png)
 
 ​		发送端仅重传那些在接收方可能丢失/受损的分组，也可能收到窗口内某些分组的ACK。
 
@@ -585,11 +585,11 @@ $$
 
 ​		对接收端，==序号在$[rcv\_base-N,rcv\_base+N-1]$内的分组将被正确接收==。若接收分组的序号在窗口内将回传ACK，分组首次接收时缓存该分组。若接收分组的序号等于$rcv\_base$，则该分组以及缓存中序号始于该分组的序号且连续的所有分组将交付给上层。若接收分组的序号在$[rcv\_base-N,rcv\_base-1]$，则==必须==回传一个ACK，无论该分组是否已被确认。
 
-![sr_operation](/img/sr_operation.png)
+![sr_operation](img/sr_operation.png)
 
 ​		SR问题在于发送端/接收端之间缺乏同步，唯一能确定的是只有信道中收到的分组/ACK。
 
-![problem_of_sr](/img/problem_of_sr.png)
+![problem_of_sr](img/problem_of_sr.png)
 
 ​		SR的窗口长度必须小于或等于序号去重后的数量的一半。
 
@@ -597,13 +597,13 @@ $$
 
 ##### 3.3.1 拥塞原因与代价
 
-![two_senders_and_a_router_with_infinite_buffers](/img/two_senders_and_a_router_with_infinite_buffers.png)
+![two_senders_and_a_router_with_infinite_buffers](img/two_senders_and_a_router_with_infinite_buffers.png)
 
 ​		$\lambda_{in} (B/s)$表示应用层通过套接字发送初始报文到传输层的速度，$\lambda_{out} (B/s)$表示应用层接收报文的速度。
 
 ​		分组通过一台路由器在容量为$R$的共享式输出链路上传输，忽略添加底层首部信息的开销、差错恢复、流量控制和拥塞控制，显然$\lambda_{out} \leqslant \frac{R}{2}$ 。时延的增长率随着$\lambda_{in}$增长，$\lambda_{in}$达到$\frac{R}{2}$时时延无穷大。这里体现了==拥塞的代价之一：当分组的到达速度接近链路容量时，分组承受巨大的排队时延==。
 
-![two_senders_with_retransmissions_and_a_router_with_finite_buffers](/img/two_senders_with_retransmissions_and_a_router_with_finite_buffers.png)
+![two_senders_with_retransmissions_and_a_router_with_finite_buffers](img/two_senders_with_retransmissions_and_a_router_with_finite_buffers.png)
 
 ​		$\lambda^{'}_{in} (B/s)$表示传输层发送初始报文段和重传报文段到网络层的速度，也称为**供给载荷**。
 
@@ -613,7 +613,7 @@ $$
 
 ​		假设发送端重传因排队时延超时但未丢失的分组，当$\lambda_{in}^{'}=\frac{R}{2}$且平均(转发两次)时$\lambda_{in}=\lambda_{out}=\frac{R}{4}$。这里体现了==拥塞的代价之一：发送方因较大的时延进行了不必要的重传来占用路由器额外的链路带宽==。
 
-![four_senders_with_retransmissions,routers_with_finite_buffers](/img/four_senders_with_retransmissions,routers_with_finite_buffers.png)
+![four_senders_with_retransmissions,routers_with_finite_buffers](img/four_senders_with_retransmissions,routers_with_finite_buffers.png)
 
 ​		当$\lambda_{in}$较小时，路由器缓存比较充足，吞吐量大致等于供给载荷，$\lambda_{out}$随着$\lambda_{in}$增大而增大。当$\lambda_{in}$较大时，对于R2，主机B发送的分组的到达速度高于主机A发送的分组的到达速度，这会导致主机A发送的分组因缓存溢出而丢失。
 
@@ -657,7 +657,7 @@ $$
 
 ##### 3.4.1 TCP报文段结构
 
-![tcp_segment_structure](/img/tcp_segment_structure.png)
+![tcp_segment_structure](img/tcp_segment_structure.png)
 
 ​		TCP报文段包括16位**源端口**、16位**目的端口**、32位**序号**、32位**确认序号**、4位**首部长度**、3位保留字段、9个标志位、16位**窗口长度**、16位**校验和**、16位**紧急指针**以及最多40字节的的选项字段。
 
@@ -707,7 +707,7 @@ $$
 
 ##### 3.4.2 连接管理
 
-![three-way_handshake](/img/three-way_handshake.png)
+![three-way_handshake](img/three-way_handshake.png)
 
 ​		1）客户端向服务端发送**SYN(报文段)**，即报文段的有效载荷为空，`SYN`为1，客户端进入`SYN_SENT`。
 
@@ -715,7 +715,7 @@ $$
 
 ​		3）客户端收到SYNACK后该连接分配TCP缓存和变量，再向服务端发送ACK，此时连接已建立，`SYN`置为0，最后服务端进入`ESTABLISHED`。服务端收到ACK后进入`ESTABLISHED`。
 
-![four-way_handshake](/img/four-way_handshake.png)
+![four-way_handshake](img/four-way_handshake.png)
 
 ​		1）客户端向服务端发送**FIN(报文段)**，即报文段的有效载荷为空，`FIN`为1，客户端进入`FIN_WAIT_1`。
 
@@ -725,7 +725,7 @@ $$
 
 ​		4）客户端收到FIN后发送ACK并进入`TIME_wAIT`，同时设置时间等待计时器，到时后释放资源(包括端口号)并进入`CLOSED`。服务端收到ACK后释放资源并进入`CLOSED`。
 
-![tcp_state](/img/tcp_state.png)
+![tcp_state](img/tcp_state.png)
 
 ​		在TCP连接的生命周期中，运行在每台主机的TCP协议会在各种**TCP状态**间变迁。
 
@@ -759,7 +759,7 @@ $$
 $$
 LastByteSent-LastByteAcked\leqslant rwnd
 $$
-![deadlock_of_tcp](/img/deadlock_of_tcp.png)
+![deadlock_of_tcp](img/deadlock_of_tcp.png)
 
 ​		当发送端收到的窗口长度为零的ACK时，会设置坚持计时器并发送一个有效载荷为一字节的探测报文段，若计时器超时或收到ACK的窗口长度为零时会再次发送同样的报文段并重置计时器，反之则继续发送有效载荷为有效数据的报文段。
 
@@ -783,7 +783,7 @@ $$
 
 ​		TCP拥塞控制被称为**加性增、乘性减**拥塞控制方式。加性增指在拥塞避免阶段$cwnd$的线性增加，乘性减指进入快速恢复阶段时$cwnd$的减半。
 
-![fsm_of_tcp_congestion_control](/img/fsm_of_tcp_congestion_control.png)
+![fsm_of_tcp_congestion_control](img/fsm_of_tcp_congestion_control.png)
 
 ​		在慢启动阶段，$cwnd$的初始值是$MSS$，$ssthresh$的初始值是$64KB$。每当报文段首次确认$cwnd$就增加$MSS$，即指数级增长。若出现超时导致的丢包，发送端令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$并重新开始慢启动。当$cwnd \geqslant ssthresh$时发送端结束慢启动并进入拥塞避免阶段。当收到3个冗余ACK时，发送端结束慢启动并令$ssthresh=\frac{cwnd}{2}$，$cwnd=\frac{ssthresh}{2}+3MSS$，然后执行快速重传，最后进入快速恢复阶段。
 
