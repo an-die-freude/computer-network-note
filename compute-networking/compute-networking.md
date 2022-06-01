@@ -123,18 +123,18 @@ $$
 
 ##### 1.5.1 因特网协议栈
 
-|        | 功能                                           | 主要协议               | 分组名称 |
-| ------ | ---------------------------------------------- | ---------------------- | -------- |
-| 应用层 | 存留网络应用程序及它们的应用层协议             | HTTP、SMTP、FTP和DNS等 | 报文     |
-| 传输层 | 应用程序端点之间传输应用层报文                 | TCP和UDP               | 报文段   |
-| 网络层 | 也称为IP层，将数据报从一台主机移动到另一台主机 | IP                     | 数据报   |
-| 链路层 | 沿着路劲将数据包传递给下一个节点               | 以太网、WiFi和DOCSIS   | 帧       |
-| 物理层 | 将帧中的一个个比特从一个节点移动到下一个节点   |                        | 比特     |
+|        | 功能                                           | 主要协议                                  | 分组名称 |
+| ------ | ---------------------------------------------- | ----------------------------------------- | -------- |
+| 应用层 | 存留网络应用程序及它们的应用层协议             | HTTP、SMTP、FTP和DNS等                    | 报文     |
+| 传输层 | 应用程序端点之间传输应用层报文                 | TCP、UDP、DCCP、DCTCP、TRFC、SCTP和QUIC等 | 报文段   |
+| 网络层 | 也称为IP层，将数据报从一台主机移动到另一台主机 | IP                                        | 数据报   |
+| 链路层 | 沿着路劲将数据包传递给下一个节点               | 以太网、WiFi和DOCSIS                      | 帧       |
+| 物理层 | 将帧中的一个个比特从一个节点移动到下一个节点   |                                           | 比特     |
 
 |      应用      | 应用层协议 |  传输层协议和端口   |
 | :------------: | :--------: | :-----------------: |
 |    电子邮件    |    SMTP    | TCP:25/465/587/2525 |
-|  远程终端访问  |   Telnet   |      TCP:8080       |
+|  远程终端访问  |   Telnet   |       TCP:23        |
 |      Web       |    HTTP    |       TCP:80        |
 |    文件传输    |    FTP     |      TCP:20/21      |
 | 远程文件服务器 |    NFS     |      UDP:2049       |
@@ -483,7 +483,9 @@ $$
 
 ​		﹡长度字段即报文段中的字节数(首部+应用数据)。
 
-![udp_checksum](/img/udp_checksum.png)
+![checksum_of_udp](/img/checksum_of_udp.png)
+
+​		伪首部包括源IP地址、目的IP地址、填充0的保留字段、传输层协议号以及报文长度。TCP的传输层协议号是6，UDP的传输层协议号是17。
 
 ​		发送端在计算校验和时需要先加上伪首部并将校验和字段置零，将伪首部、首部和应用数据转换成16位二进制(不足部分填充零)并求和，求和时需要回卷(如果进位到第17位则将结果加一)，将和取反得到校验和，发送端将设置校验和并去掉伪首部。接收端计算校验和方式类似于发送端(不需要将校验和置零)，最后结果全为一则说明数据无误，否则警告。
 
@@ -495,7 +497,7 @@ $$
 
 ##### 3.2.1 rdt1.0
 
-![rdt1.0](/img/rdt1.0.png)
+![fsm_of_rdt1.0](/img/fsm_of_rdt1.0.png)
 
 ​		rdt1.0协议指经完全可靠信道的可靠数据传输，故接收端就不需要提供任何反馈信息给发送端。
 
@@ -509,7 +511,7 @@ $$
 
 ​		通过**肯定确认**或**否定确认**来让发送端知道那些内容被正确接收或接收有误需要重传的可靠传输协议称为**自动重传请求**协议。自动重传请求协议还需要==差错检测==、==接收端反馈==^【用1位来表示，0是NAK，1是ACK】^和==重传==来处理比特差错的情况。
 
-![rdt2.0](/img/rdt2.0.png)
+![fsm_of_rdt2.0.0](/img/fsm_of_rdt2.0.png)
 
 ​		rdt2.0相比rdt1.0，加入了差错检测和肯定/否定确认。
 
@@ -521,19 +523,19 @@ $$
 
 ​		但是rdt2.0忽视了ACK/NAK分组受损的情况，解决这一问题的简单方法就是添加一个新字段来表示发送数据分组的序号。
 
-![rdt2.1](/img/rdt2.1.png)
+![fsm_of_rdt2.1.png](/img/fsm_of_rdt2.1.png)
 
 ​		rdt2.1是rdt2.0的修订版，rdt2.1的发送端和接收端FSM的状态数都是以前的两倍，因为需要反映出目前分组的序号。rdt2.1使用了接收端到发送端的ACK/NAK。当收到乱序的分组时，接收端回传ACK。当收到受损的分组时，接收端回传NAK。
 
-![rdt2.2](/img/rdt2.2.png)
+![fsm_of_rdt2.2](/img/fsm_of_rdt2.2.png)
 
 ​		rdt2.2相比rdt2.1，rdt2.2无NAK，而是对上一次正确接收的分组回传ACK。发送端收**冗余ACK**后，就知道了接收端没有正确接收到冗余ACK对应的分组后的分组。因此，ACK报文需要一个序号字段。
 
 ##### 3.2.3 rdt3.0
 
-![rdt3.0_sender](/img/rdt3.0_sender.png)
+![fsm_of_rdt3.0_sender](/img/fsm_of_rdt3.0_sender.png)
 
-​		rdt3.0是用于具有比特差错的丢包信道的协议。通过在发送端中加入**倒数定时器**来解决超时/丢包问题，接收端与rdt2.2相同。
+​		rdt3.0是用于具有比特差错的丢包信道的协议。通过在发送端中加入**倒数计时器**来解决超时/丢包问题，接收端与rdt2.2相同。
 
 ​		因为分组序号在0和1之间交替，rdt3.0也被称为**比特交替协议**。
 
@@ -623,7 +625,7 @@ $$
 
 ​		在端到端拥塞控制中，网络层==没有==为传输层提供显示支持。即使网络中存在拥塞，端系统也必须通过对丢包和时延等网络行为的观察来确定是否拥塞。
 
-​		在网络辅助的拥塞控制中，路由器向发送端提供关于的拥塞状态的显示反馈信息。拥塞信息反馈到发送端通常有两种方式，一种是路由器直接发送关于拥塞状态的分组给发送端，此时该分组称为**抑制分组**。另一种方式更通用，即路由器更新由发送端到接收端的分组中某个字段来表示拥塞状态。若接收端收到分组的标志位表示出现拥塞则会通知发送端，故这种方式至少需要一个完整的往返周期。
+​		在网络辅助的拥塞控制中，路由器向发送端提供关于的拥塞状态的显示反馈信息。拥塞信息反馈到发送端通常有两种方式，一种是路由器直接发送关于拥塞状态的分组给发送端，此时该分组称为**抑制分组**。另一种方式更通用，TCP、DCCP和DCTCP都有使用。路由器更新==由发送端到接收端的数据报头部中的ECN拥塞标志位==来表示出现拥塞。若接收端收到分组的标志位表示出现拥塞则会通知发送端，故这种方式至少需要一个完整的往返周期。
 
 #### 3.4 TCP
 
@@ -633,9 +635,13 @@ $$
 
 ​		进程间建立TCP连接后，双方都可以发送/接收报文段，故TCP是**全双工服务**。
 
+​		TCP根据ACK到达的速度来调节拥塞窗口，故TCP是**自计时**的。
+
 ​		客户端先发送一个特殊的报文段，服务端用另一个特殊报文段来响应，最后，客户端用第三个特殊报文段作为响应，这种建立连接的过程被称为**三次握手**。前2个报文段不承载有效载荷，第三个报文段可以承载有效载荷。
 
-​		TCP连接的双方都为连接设置了接收缓存。
+​		TCP的双方都由一个接收缓存、一个发送缓存和几个变量组成。
+
+​		TCP会使用**重传计时器**、**坚持计时器**、**保活计时器**和**时间等待计时器**这四种计时器。重传计时器用于报文段重传。坚持计时器用于防止双方的死锁。保活计时器用于在长连接中断开无响应的连接。时间等待计时器用于四次握手断开连接前的等待。
 
 ​		**最大传输单元**指从源到目的地所有链路上发送的最大链路层帧。**最大报文段长度**是报文段中有效载荷的最大长度。最大传输单元一般是1500字节，TCP/IP首部的长度一般是40字节，故最大报文段长度一般是1460字节。
 
@@ -644,6 +650,8 @@ $$
 ​		当收到序号在按序报文段之后的报文段时则立即发送冗余ACK。
 
 ​		一旦收到3个冗余ACK，TCP就执行**快速重传**。
+
+​		当==超时或收到3个冗余ACK==时，发送端出现了丢包。
 
 ​		TCP的差错恢复机制是**选择性确认**，即有选择地确认乱序报文段。
 
@@ -657,13 +665,13 @@ $$
 
 ​		确认号是==下一次按序应接收报文段首字节的编号==。TCP只确认报文段有效载荷中到第一个丢失字节为止的字节，故TCP提供**累积确认**。当有效载荷为空时吗，确认号被**捎带**在报文段中。
 
-​		9个标志位中前3个标志位是**ECN**，后6个标志是控制位。
+​		9个标志位中第2、3位标志位用于显式拥塞控制，若发送端至接收端链路中的某个路由器出现拥塞，当数据报达到该路由器后，路由器将数据报头部中的ECN标识为置1，接收端收到数据报后将ACK报文段头部中的`ECE`置1来通知发送端链路出现拥塞，发送端像快速重传一样对`ECE`为1的ACK回应ACK，发送端在下一个报文段中将`CWR`置1来通知接收端拥塞窗口已缩减。后6个标志是控制位。
 
-​		﹡**NS(N)**通常用于防止TCP发送端的标记数据包被意外或恶意地隐藏。
+​		﹡**NS(N)**通常用于防止标记数据包被意外或恶意地隐藏。
 
-​		﹡**CWR(C)**为1时通知对方拥塞窗口已经缩小。
+​		﹡**CWR(C)**为1时通知对方拥塞窗口已缩减。
 
-​		﹡**ECE(E)**为1时通知对方从对方到我方的网络出现拥塞。
+​		﹡**ECE(E)**为1时通知对方链路出现拥塞。
 
 ​		﹡**Urgent/URG(U)**为1时表示高优先级报文段，紧急指针生效。
 
@@ -695,6 +703,8 @@ $$
 
 ​		窗口长度用于流量控制服务。
 
+​		校验和的计算与UDP相同。
+
 ##### 3.4.2 连接管理
 
 ![three-way_handshake](/img/three-way_handshake.png)
@@ -713,7 +723,7 @@ $$
 
 ​		3）服务端向客户端发送FIN并进入`LAST_ACK`。
 
-​		4）客户端收到FIN后发送ACK并进入`TIME_wAIT`，同时设置计时器，到时后释放资源(包括端口号)并进入`CLOSED`。服务端收到ACK后释放资源并进入`CLOSED`。
+​		4）客户端收到FIN后发送ACK并进入`TIME_wAIT`，同时设置时间等待计时器，到时后释放资源(包括端口号)并进入`CLOSED`。服务端收到ACK后释放资源并进入`CLOSED`。
 
 ![tcp_state](/img/tcp_state.png)
 
@@ -743,7 +753,7 @@ $$
 $$
 rwnd=RcvBuffer-[LastByteRcvd-LastByteRead]
 $$
-​		接收端将报文段中窗口长度的字段设置为$rwnd$来告知发送端可用缓存空间。
+​		接收端将报文段中窗口长度字段设置为$rwnd$来告知发送端可用缓存空间。
 
 ​		$LastByteSent-LastByteAcked$表示发送端待确认的数据量。
 $$
@@ -751,19 +761,82 @@ LastByteSent-LastByteAcked\leqslant rwnd
 $$
 ![deadlock_of_tcp](/img/deadlock_of_tcp.png)
 
-​		当发送端收到的窗口长度为零的ACK时，会设置一个计时器并发送一个有效载荷为一字节的报文段，若计时器超时或收到ACK的窗口长度为零时会再次发送同样的报文段并重置计时器，反之则继续发送有效载荷为有效数据的报文段。
+​		当发送端收到的窗口长度为零的ACK时，会设置坚持计时器并发送一个有效载荷为一字节的探测报文段，若计时器超时或收到ACK的窗口长度为零时会再次发送同样的报文段并重置计时器，反之则继续发送有效载荷为有效数据的报文段。
 
 ##### 3.4.5 TCP拥塞控制
 
 ​		网络层不向端系统提供显示的网络拥塞反馈，故TCP只能使用端到端拥塞控制。
 
+​		TCP发送端相比接收端多个变量，即**拥塞窗口**，用来限制发送速度。发送端未被确认的数据不能超过接收窗口与拥塞窗口的最小值。
+$$
+LastByteSent-LastByteAcked \leqslant min\{cwnd,rwnd\}
+$$
+​		假设接收窗口足够大、忽略丢包与时延以及发送端总有数据需要发送，==发送速度大致等于$\frac{cwnd}{RTT}(B/s)$==。
+
+​		当某路径出现拥塞时，该路径上的一/多个路由器的缓存会溢出并导致某个数据包丢失，进而引发发送端的丢包，此时发送端可以确定该路径出现了拥塞。
+
+​		==带宽探测：丢包表示出现了拥塞，应该降低发送速度。当未确认报文段的ACK到达时应该提高发送速度。==
+
+###### 3.4.5.1 TCP拥塞控制算法
+
+​		TCP拥塞控制算法包括**慢启动**、**拥塞避免**和**快速恢复**。
+
+​		TCP拥塞控制被称为**加性增、乘性减**拥塞控制方式。加性增指在拥塞避免阶段$cwnd$的线性增加，乘性减指进入快速恢复阶段时$cwnd$的减半。
+
+![fsm_of_tcp_congestion_control](/img/fsm_of_tcp_congestion_control.png)
+
+​		在慢启动阶段，$cwnd$的初始值是$MSS$，$ssthresh$的初始值是$64KB$。每当报文段首次确认$cwnd$就增加$MSS$，即指数级增长。若出现超时导致的丢包，发送端令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$并重新开始慢启动。当$cwnd \geqslant ssthresh$时发送端结束慢启动并进入拥塞避免阶段。当收到3个冗余ACK时，发送端结束慢启动并令$ssthresh=\frac{cwnd}{2}$，$cwnd=\frac{ssthresh}{2}+3MSS$，然后执行快速重传，最后进入快速恢复阶段。
+
+​		在不考虑处理时间的情况下，客户端发送请求到远程数据中心并收到响应大致需要$4RTT$，其中建立TCP需要$RTT$，慢启动阶段需要$3RTT$。显然，当$RTT$较大时，时延也较大。可以使用**TCP分岔**解决这一问题，即通过CDN将请求转发至邻近客户端且与远程数据中心有很大窗口的连接的前端服务端，在这种情况下响应所需时间大致是$4RTT_{FE}+RTT_{BE}+处理时间$，其中$RTT_{FE}$表示客户端与前端服务端的往返时间，$RTT_{BE}$表示前端服务端与远程数据中心的往返时间。当前端服务端与客户端足够近，就可以忽略$RTT_{FE}$，此时响应所需时间大致等于$RTT$。
+
+​		在拥塞避免阶段，每个$RTT$内$cwnd$仅增加$MSS$。通用实现方法是若$RTT$内发送了$n$个报文段，在此期间每个报文段首次确认时$cwnd$增加$\frac{cwnd}{n}$。超时和3个冗余ACK的情况同慢启动。
+
+​		在快速恢复阶段，每收到一个冗余ACK，$cwnd$增加$MSS$。当收到了新报文段的首次ACK，发送端会结束快速恢复阶段并进入拥塞避免阶段。当出现超时导致的丢包时发送端会结束快速恢复并令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$，然后进入慢启动阶段。
+
+![evolution_of_tcp_congestion_window](/img/evolution_of_tcp_congestion_window.png)
+
+​		TCP的较新版本**TCP Reno**的快速恢复阶段符合上述情况。但TCP的早期版本**TCP Tahoe**在快速恢复阶段只要出现丢包都会结束快速恢复并令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$，然后进入慢启动阶段。
+
+​		TCP Vegas试图在维持较好吞吐量同时避免拥塞，通过测量RTT来衡量拥塞程度，根据拥塞程度线性地降低发送速度。TCP Vegas提供了慢启动、拥塞避免、快速恢复、快速重传和SACK。
+
+###### 3.4.5.2 平均吞吐量
+
+​	当计算一个长存活期连接的平均吞吐量时，因为慢启动阶段通常很短，可以忽略。在一个RTT内，窗口长度是$w(B)$，发送速度大约是$\frac{w}{RTT}$。在出现丢包之前，每个RTT内$w=w+MSS$。用$W$表示出现丢包时$w$的值。
+$$
+一条连接的平均吞吐量=\frac{4W}{3RTT}
+$$
+​		当计算一个高速连接的平均吞吐量时，在一个RTT内，窗口长度是$w(B)$，发送速度大约是$\frac{w}{RTT}$。丢包率为$L$。
+$$
+一条连接的平均吞吐量=\frac{1.22\times MSS}{RTT\sqrt{L}}
+$$
+
+###### 3.4.5.3 公平性
+
+​		**瓶颈链路**指沿着某连接路径上的每条连接都不拥塞且相比该链路的传输容量都具有足够的传输容量。
+
+​		假设$K$条TCP连接每条的端到端路径不同，但是都经过一段传输速率为$R(b/s)$的瓶颈链路。若每条连接都在传输一个大文件且无UDP流量通过该链路，而且每条连接的平均传输速度接近$\frac{R}{K}$，则认为该拥塞控制机制是**公平**的。在这种理想情况下，当所有连接的RTT相同时才能平等共享带宽。实际上这些条件不能满足，具有较小RTT的连接可以更快地扩大拥塞窗口。
+
+​		UDP并没有内置的拥塞控制机制，UDP是不公平的，UDP可能抑制TCP。
+
+​		当一个应用使用多条并行TCP连接时，对单条TCP连接可能是公平的，但对应用并不公平。
+
+### 第四章 网络层
+
+​		
+
+​		
+
 ### 附录1 专业术语
 
 > **access point(AP)** 访问接入点
 >
+> **acknowledgment(ACK)** 确认
+>
 > **active optical network terminator(AON)** 主动光纤网络
 >
-> **alternating-bit protocol** 比特交替协议
+> **additive increase,multiplicative decrease(AIMD)** 加性增、乘性减
+>
+> **alternating bit protocol** 比特交替协议
 >
 > **application programming interface(API)** 应用程序编程接口
 >
@@ -773,13 +846,13 @@ $$
 >
 > **average throughput** 平均吞吐量
 >
-> **band-width** 带宽
+> **band width** 带宽
 >
-> **bandwidth-sensitive application** 带宽敏感的应用
+> **bandwidth sensitive application** 带宽敏感的应用
 >
 > **Berkeley Internet Name Domain(BIND/NAMED)** DNS服务器软件
 >
-> **best-effort delivery service** 尽力而为交付服务
+> **best effort delivery service** 尽力而为交付服务
 >
 > **bidirectional data transfer** 双向/全双工数据传输
 >
@@ -809,11 +882,15 @@ $$
 >
 > **communication link** 通信链路
 >
+> **congestion avoidance** 拥塞避免
+>
 > **congestion control** 拥塞控制
 >
 > **congestion window reduced(CWR)**  拥塞窗口减少
 >
-> **connection-oriented** 面向连接的
+> **congestion window(cwnd)** 拥塞窗口
+>
+> **connection oriented** 面向连接的
 >
 > **content distribution network(CDN)** 内容分发网络
 >
@@ -827,9 +904,13 @@ $$
 >
 > **data center** 数据中心
 >
+> **data center TCP(DCTCP)** 数据中心TCP
+>
 > **datagram** 数据报
 >
-> **denial-of-service(DOS)** 拒绝服务
+> **datagram congestion control protocol(DCCP)** 数据报拥塞控制协议
+>
+> **denial of service(DOS)** 拒绝服务
 >
 > **demultiplexing** 多路分解
 >
@@ -849,7 +930,7 @@ $$
 >
 > **dynamic adaptive streaming over HTTP(DASH)** 经HTTP的动态适应流
 >
-> **ECN-Echo(ECE)** 显示拥塞提醒回应
+> **ECN Echo(ECE)** 显式拥塞提醒回应
 >
 > **edge router** 边缘路由器
 >
@@ -865,17 +946,19 @@ $$
 >
 > **elastic application** 弹性应用
 >
-> **event-based programming** 基于事件的编程
+> **event based programming** 基于事件的编程
 >
-> **explicit congestion notification(ECN)** 显示拥塞通知
+> **explicit congestion notification(ECN)** 显式拥塞通知
 >
 > **extend simple mail transfer protocol(ESMTP)** 扩展简单邮件传输协议
 >
 > **exponential weighted moving average(EWMA)** 指数加权移动平均
 >
+> **fast recovery** 快速恢复
+>
 > **fast retransmit** 快速重传
 >
-> **flow-control service** 流量控制协议
+> **flow control service** 流量控制协议
 >
 > **fiber to the home(FTTH)** 光纤到户
 >
@@ -889,7 +972,7 @@ $$
 >
 > **frequency-division multiplexing(FDM)** 频分复用
 >
-> **full-duplex service** 全双工服务
+> **full duplex service** 全双工服务
 >
 > **geographically closest** 地理上最近
 >
@@ -1001,7 +1084,7 @@ $$
 >
 > **peer** 对等
 >
-> **peer-to-peer(P2P)** 点对点
+> **peer to peer(P2P)** 点对点
 >
 > **persistent connection** 持续连接
 >
@@ -1011,9 +1094,7 @@ $$
 >
 > **point of presence(POP)** 存在点
 >
-> **point-to-point** 点对点
->
-> **acknowledgment(ACK)** 肯定确认
+> **point to point** 点对点
 >
 > **post office protocol-version 3(POP3)** 第三版邮局
 >
@@ -1031,9 +1112,11 @@ $$
 >
 > **queuing delay** 排队时延
 >
+> **quick UDP internet connection(QUIC)** 快速UDP互联网连接
+>
 > **rarest first** 最稀缺优先
 >
-> **real-time measurement** 实时测量
+> **real time measurement** 实时测量
 >
 > **reliable data transfer(RDT)** 可靠数据传输
 >
@@ -1043,7 +1126,7 @@ $$
 >
 > **resource record(RR)** 资源记录
 >
-> **round-trip time(RTT)** 往返时间
+> **round trip time(RTT)** 往返时间
 >
 > **route** 路径
 >
@@ -1056,6 +1139,8 @@ $$
 > **selective acknowledgement(SACK)** 选择性确认
 >
 > **selective repeat(SR)** 选择重传
+>
+> **self clocking** 自计时的
 >
 > **sequence number** 序号
 >
@@ -1071,6 +1156,10 @@ $$
 >
 > **sliding-window protocol** 滑动窗口协议
 >
+> **slow start** 慢启动
+>
+> **slow start threshold(ssthresh)** 慢启动阈值
+>
 > **socket** 套接字
 >
 > **source port number field** 源端口号字段
@@ -1081,21 +1170,27 @@ $$
 >
 > **stateless protocol** 无状态协议
 >
-> **stop-and-wait** 停等
+> **stop and wait** 停等
 >
-> **store-and-forward transmission** 存储转发传输
+> **store and forward transmission** 存储转发传输
 >
-> **three-way handshake** 三次握手
+> **stream control transmission protocol(SCTP)** 流控制传输协议
 >
-> **time-division multiplexing(TDM)**  时分复用
+> **TCP friendly rate control(TFRC)** TCP友好速度控制
+>
+> **TCP splitting** TCP分岔
+>
+> **three way handshake** 三次握手
+>
+> **time division multiplexing(TDM)**  时分复用
 >
 > **time to live(TTL)** 生存时间
 >
-> **tit-for-tat** 一报还一报
+> **tit for tat** 一报还一报
 >
-> **top-down approach** 自顶向下方方法
+> **top down approach** 自顶向下方方法
 >
-> **top-level domain(TLD)** 顶级域
+> **top level domain(TLD)** 顶级域
 >
 > **torrent** 洪流
 >
@@ -1135,6 +1230,8 @@ $$
 
 > cookie相关：RFC 6265
 >
+> DCCP相关：RFC 4340
+>
 > DNS相关：RFC 1034、RFC 1035、RFC 2136、RFC 3007
 >
 > email相关：RFC 5322
@@ -1147,8 +1244,14 @@ $$
 >
 > port相关：RFC 1700、RFC 3232
 >
+> SCTP相关：TFC 3286、RFC 4960
+>
 > SMTP相关：RFC 821、RFC 1425、RFC 1511、RFC 1521、RFC 1522、RFC 5321 
 >
-> TCP相关：RFC 793、RFC 1122、RFC 1323、RFC 2018、RFC 2581
+> telnet相关：RFC 854
+>
+> TFRC相关：RFC 5348
+>
+> TCP相关：RFC 793、RFC 1122、RFC 1323、RFC 2018、RFC 2581、RFC 3168、RFC 3390、RFC 3649、RFC 3782、RFC 5681
 >
 > UDP相关：RFC 768
