@@ -793,7 +793,7 @@ $$
 
 ​		在快速恢复阶段，每收到一个冗余ACK，$cwnd$增加$MSS$。当收到了新报文段的首次ACK，发送端会结束快速恢复阶段并进入拥塞避免阶段。当出现超时导致的丢包时发送端会结束快速恢复并令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$，然后进入慢启动阶段。
 
-![evolution_of_tcp_congestion_window](/img/evolution_of_tcp_congestion_window.png)
+![evolution_of_tcp_congestion_window](img/evolution_of_tcp_congestion_window.png)
 
 ​		TCP的较新版本**TCP Reno**的快速恢复阶段符合上述情况。但TCP的早期版本**TCP Tahoe**在快速恢复阶段只要出现丢包都会结束快速恢复并令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$，然后进入慢启动阶段。
 
