@@ -485,7 +485,7 @@ $$
 
 ![checksum_of_udp](img/checksum_of_udp.png)
 
-​		伪首部包括源IP地址、目的IP地址、填充0的保留字段、传输层协议号以及报文长度。TCP的传输层协议号是6，UDP的传输层协议号是17。
+​		伪首部包括源IP地址、目的IP地址、填充0的保留字段、传输层协议号以及报文长度。
 
 ​		发送端在计算校验和时需要先加上伪首部并将校验和字段置零，将伪首部、首部和应用数据转换成16位二进制(不足部分填充零)并求和，求和时需要回卷(如果进位到第17位则将结果加一)，将和取反得到校验和，发送端将设置校验和并去掉伪首部。接收端计算校验和方式类似于发送端(不需要将校验和置零)，最后结果全为一则说明数据无误，否则警告。
 
@@ -655,7 +655,7 @@ $$
 
 ​		TCP的差错恢复机制是**选择性确认**，即有选择地确认乱序报文段。
 
-##### 3.4.1 TCP报文段结构
+##### 3.4.1 TCP报文段
 
 ![tcp_segment_structure](img/tcp_segment_structure.png)
 
@@ -781,7 +781,7 @@ $$
 
 ​		TCP拥塞控制算法包括**慢启动**、**拥塞避免**和**快速恢复**。
 
-​		TCP拥塞控制被称为**加性增、乘性减**拥塞控制方式。加性增指在拥塞避免阶段$cwnd$的线性增加，乘性减指进入快速恢复阶段时$cwnd$的减半。
+​		TCP拥塞控制被称为**加性增、乘性减**拥塞控制方式。加性增指在拥塞避免阶段$cwnd$的线性增加，乘性减指进入快速恢复阶段时$cwnd$的减半，若结果不是整数则向下取整。
 
 ![fsm_of_tcp_congestion_control](img/fsm_of_tcp_congestion_control.png)
 
@@ -801,13 +801,30 @@ $$
 
 ###### 3.4.5.2 平均吞吐量
 
-​	当计算一个长存活期连接的平均吞吐量时，因为慢启动阶段通常很短，可以忽略。在一个RTT内，窗口长度是$w(B)$，发送速度大约是$\frac{w}{RTT}$。在出现丢包之前，每个RTT内$w=w+MSS$。用$W$表示出现丢包时$w$的值。
+​		当计算一个吞吐量较大的连接的平均吞吐量时，因为慢启动阶段和快速恢复阶段通常很短，都可以忽略，故可以认为该连接处于拥塞避免阶段。在一个RTT内，窗口长度是$w(B)$，吞吐量大约是$\frac{w}{RTT}$。在出现丢包之前，每个RTT内$w=w+MSS$。用$W$表示出现丢包时$w$的值。
+
+​		若在一段时间内吞吐量从$\frac{W}{2RTT}$线性增长到$\frac{W}{RTT}$，丢包仅出现了一次且发生在最后。
 $$
-一条连接的平均吞吐量=\frac{4W}{3RTT}
+\begin{align}
+Segment_{total}&=\frac{W}{2RTT}\times RTT+\frac{W+2}{2RTT}\times RTT+\cdots +\frac{W}{RTT}\times RTT\\
+&=(\frac{W}{4}+\frac{W}{2}) \times (\frac{W}{4}+\frac{1}{2})\\
+&=\frac{3W^2}{8}+\frac{3W}{4}\\
+\end{align}
 $$
-​		当计算一个高速连接的平均吞吐量时，在一个RTT内，窗口长度是$w(B)$，发送速度大约是$\frac{w}{RTT}$。丢包率为$L$。
+​		丢包率$L=\frac{Segment_{loss}}{Segment_{total}}$。
 $$
-一条连接的平均吞吐量=\frac{1.22\times MSS}{RTT\sqrt{L}}
+\begin{align}
+L&=\frac{1}{Segment_{total}}\\
+&=\frac{1}{\frac{3W^2}{8}+\frac{3W}{4}}\\
+&=\frac{8}{3W^2+6W}
+\end{align}
+$$
+​		由于${3W^2}>>{6W}$，$6W$可以忽略，故$W \approx \sqrt{\frac{8}{3L}}$。由于增长是线性，平均吞吐量是$\frac{3W}{4RTT}(MSS)$。
+$$
+\begin{align}
+平均吞吐量&=\frac{\sqrt{6}MSS}{2RTT\sqrt{L}}\\
+&\approx \frac{1.22\times MSS}{RTT\sqrt{L}}
+\end{align}
 $$
 
 ###### 3.4.5.3 公平性
@@ -822,9 +839,130 @@ $$
 
 ### 第四章 网络层
 
-​		
+​		网络层可以分为**数据平面**和**控制平面**。
 
-​		
+​		﹡数据平面即==路由器的功能==，用于从路由器的输入链路向输出链路转发分组，包括传统的==IP地址转发==和==通用转发==。IP地址转发仅根据IP地址转发，通用转发根据IP地址和其他因素转发。
+
+​		﹡控制平面即==网络范围的逻辑==，用于协调路由器间的转发动作，使得分组最终沿着源主机和目的主机之间的路径进行端到端传输。
+
+​		**转发**是指将分组从一个输入链路接口转移到适当的输出链路接口的路由器本地动作。转发所需时间通常为几纳秒，故通过硬件实现。
+
+​		**路由选择**是指确定数据报从源到目的地的端到端路径的网络范围处理过程。路由选择所需时间通常为几秒，故通过软件来实现。
+
+​		**网络服务模型**定义了分组在发送与接收端系统之间的端到端运输特性。
+
+#### 4.1 路由器
+
+![router_architecture](img/router_architecture.png)
+
+​		线路端接的功能是结束传入物理链路的物理层功能。
+
+​		数据链路处理的功能是与位于传入链路远端的数据链路层交互的数据链路层功能。
+
+​		当一条链路是双向时，输入端口和输出端口通常成对出现在同一线路卡上。
+
+##### 4.1.1 IP转发
+
+​		每台路由器都有**转发表**。路由选择处理器通过使用路由选择协议与其他路由器中的路由选择处理器交互来计算/更新转发表。在SDN路由器中，路由选择处理器用来接收远程控制器计算的转发表项更新转发表。
+
+​		路由选择处理器经过独立总线将转发表复制到线路卡。通过转发表的副本，每个输入端口就可以本地完成转发，避免了集中式处理的瓶颈。
+
+​		路由器根据分组目的地址的**前缀**与转发表中的表现进行匹配。当有多个匹配项时，路由器使用**最长前缀匹配规则**。
+
+​		可以使用**三态内容寻址存储器**来保证查询转发表所需时间维持在一个常数内。
+
+​		找到分组的输出端口后，分组就可以进入交换结构了，但如果该输出端口已被占用，分组可能在进入交换结构前暂时阻塞。
+
+##### 4.1.2 交换结构
+
+![three_switching_techniques](img/three_switching_techniques.png)
+
+​		﹡==经内存交换==：最简单、最早的路由器是传统的计算机，输入端口与输出端口之间的交换是在CPU(路由选择处理器)的直接控制下完成的。输入/输出端口的功能就像传统操作系统中的I/O设备一样。当分组到达到达一个输入端口时，该端口先通过中断方式向路由选择控制器发送信号，该分组从输入端口复制到内存，路由选择处理器从分组首部中获取IP，查询转发表获取输出端口并将分组复制到输出端口的缓存中。若内存每秒能读/写$B$个分组，则总转发吞吐量必定小于$\frac{B}{2}$，因为共享系统总线每次仅能执行一个内存读/写。
+
+​		﹡==经总线交换==：输入端口经一根共享总线将分组直接传输到输出端口，不需要路由选择控制器的干预。输入端口预先为分组指定一个交换机内部标签(首部)^【仅用来跨越总线】^并指示输出端口。每个输入端口都能收到该分组，但只有指定的输入端口才能保存该分组，指定的输出端口保存分组后去掉标签。每次仅有一个分组能跨域总线，故分组有时需要等待，导致路由器的带宽受限于总线速度。
+
+​		﹡==经互联网络交换==：纵横式交换机是由$2N$条总线构成的互联网络，包括$N$个输入端口和$N$个输出端口。每条垂直的总线与每条水平的总线交叉，交叉点通过交换结构控制器实现随时开启/闭合。纵横式交换机是**非阻塞**的，只有两个或以上的分组同时转发到同一个输出端口，分组不会阻塞，反之则会出现分组等待。
+
+​		部分现代路由器也通过内存进行交换，不过转发表的查找和将分组存储进适当的内存存储位置是由输入线路卡来处理。
+
+​		更复杂的互联网络使用多级交换元素来使多个分组同时转发到同一输出端口时无需等待。例如三级非阻塞交换策略，在这种策略中，输入/输出端口连接到$N$个交换结构，输入端口将分组分成$K$个较小的块并通过$N$个交换结构发送这$K$个块到指定输出端口，输出端口再将这$K$个块组装成原本的分组。
+
+##### 4.1.3 排队
+
+​		假设纵横式交换机有$N$个输入端口和$N$个输出端口且输入线路与输入线路速度相同，都为$R_{line}(packet/s)$。此外，所有分组具有相同的固定长度，以同步的方式到达输入端口且采用FCFS方式，即所有链路发送/接收分组的时间相等。用$R_{switch}$表示分组从输入端口传输到输出端口的速度。再假设$R_{switch}=N\times R_{line}$。
+
+![hol_blocking](img/hol_blocking.png)
+
+​		一个输入队列中排队的分组阻塞后，队列中该分组之后的分组也会阻塞，这种情况称为**线路前部阻塞**。由于HOL阻塞，当输入链路接收分组的度达到其容量的$58\%$时，在某些假设前提下，输入端口的队列长度将无限制地增大。
+
+![output_port_queueing](img/output_port_queueing.png)
+
+​		当没有足够缓存时，要么丢弃到达的分组(即弃尾策略)，要么删除排队中的分组。在某些情况下，在缓存填满之前便丢弃分组或在其首部加上标记，这可以向发送端反馈拥塞信号，这种策略称为**主动队列管理**策略。RED算法就算最广泛研究与实现的AQM算法之一。
+
+​		$B$表示缓存容量，$C$表示链路容量，通常$B=RTT\times C$，当大量TCP流量经过同一链路时$B=\frac{RTT\times C}{\sqrt{N}}$。
+
+##### 4.1.4 分组调度
+
+![fifo_or_fcfs_queueing_model](img/fifo_or_fcfs_queueing_model.png)
+
+​		FIFO/FCFS调度规则安装分组到达输出链路队列的顺序来传输分组。当链路正忙于传输其他分组时，到达链路输出队列的分组需要排队等待传输。若缓存不足则需要丢弃分组。
+
+![priority_queueing_model](img/priority_queueing_model.png)
+
+​		在**优先级排队**规则下，到达输出链路的分组被分类放入输出队列的优先级类，同一优先级采用FIFO方式。在非抢占式式优先级排队规则下，一旦分组开始传输就不能打断。
+
+![weighted_fair_queueing_model](img/weighted_fair_queueing_model.png)
+
+​		在**循环排队**规则下，分组会被分类，但是类之间不存在严格的优先级，循环调度器在这些类之间轮流提供服务。在**保持工作排队**规则下，有分组待传输时不会允许链路空闲，当指定类里不存在分组时，会立即检查循环序列中的下一个类。**加权公平排队**就是循环排队的一种通用实现方式，它也是保持工作队列。
+
+​		WFQ与循环排队的不同之处在于每个类在任何时间间隔内可能收到==不同数量==的服务。对于WFQ，若有$n$个类存在分组待传输，类$i$的权值为$w_i$，即使所有类都有分组排队，类$i$总能保证至少$\frac{w_i}{\sum_{j=1}^{n}{w_j}}\times R$的吞吐量。
+
+#### 4.2 网际协议
+
+##### 4.2.1 IPv4数据报
+
+![ipv4_datagram_format](img/ipv4_datagram_format.png)
+
+​		IPv4数据报包括4位的**版本(号)**、4位的**首部长度**、8位的**服务类型**(3位优先级、4位服务类型子字段和1位必须为零)、16位的**数据报长度**、16位的**标识**、3个**标志位**、13位的**片偏移**、8位的**生存时间**、8位的**上层协议**、16位的**首部检验和**、32位的**源IP地址**、32位的**目的IP地址**、最多40字节的**可选项**和有效载荷。
+
+​		版本规定了IP协议版本。由于不同版本的IP协议数据报格式不同，需要版本字段来确定。
+
+​		首部长度==以4字节为单位==表示首部长度。
+
+​		服务类型用来区分不同类型的数据报。前3位是优先级字段，第4位到第6位是DTR字段，第4位到第7位是服务类型子字段，最后一位必须为零。服务类型子字段最多只能有1位为1。
+
+| 优先级 | 名称                 | 含义             |
+| ------ | -------------------- | ---------------- |
+| 000    | routine              | 默认             |
+| 001    | priority             | 数据业务         |
+| 010    | immediate            | 数据业务         |
+| 011    | flash                | 语音控制数据     |
+| 100    | flash override       | 视频会议或视频流 |
+| 101    | critic               | 语音数据         |
+| 110    | internetwork control | 网络控制数据     |
+| 111    | network control      | 网络控制数据     |
+
+| 服务类型子字段 | 名称                   |
+| -------------- | ---------------------- |
+| 0000           | normal service         |
+| 1000           | minimize delay         |
+| 0100           | maximize throughout    |
+| 0010           | maximize reliability   |
+| 0001           | minimize monetary cost |
+
+​		生存时间表示数据报能经过的最大路由器数量，每当路由器处理数据报时该字段值减1，当该字段值为0时丢弃该数据报。
+
+​		由于源到目的地路径的上的每段链路可能使用不同的链路层协议，不同协议的最大传输单元可能不同，所以可能需要将数据报分成多个较小的数据报并封装成合适的链路层帧，这些较小的数据报称为**片**。片到达目的地后需要重组成原始数据报再交给传输层。重组过程在端系统完成，因为组装会给增加协议复杂性和降低路由器的性能。
+
+​		标识、标志位以及片偏移用于分片和重组。标识是数据报的唯一值，分片时会复制到各个片中。3个标志位中第1位是保留位，第2位是禁止分片标志位，第3位是还有分片标志。DF为1时表示不能分片，MF为1时表示不是最后一个片。片偏移==以8字节为单位==表示片在原始数据报中的相对位置。
+
+​		上层协议表示传输层所用协议的协议号。1表示ICMP，2表示IGMP，6表示TCP，17表示UDP，89表示OSPF。
+
+​		首部校验和==仅用来校验数据报中的首部==，计算方式类似于UDP的校验和计算。由于每次经过路由器时首部中的某些字段会改变，所以需要重新计算。
+
+##### 4.2.2 IPv4编址
+
+
 
 ### 附录1 专业术语
 
@@ -833,6 +971,8 @@ $$
 > **acknowledgment(ACK)** 确认
 >
 > **active optical network terminator(AON)** 主动光纤网络
+>
+> **active queue management(AQM)** 主动队列算法
 >
 > **additive increase,multiplicative decrease(AIMD)** 加性增、乘性减
 >
@@ -896,6 +1036,8 @@ $$
 >
 > **content provider network** 内容提供商网络
 >
+> **control plane** 控制平面
+>
 > **countdown timer** 倒数计时器
 >
 > **cumulative acknowledgement** 累积确认
@@ -906,9 +1048,13 @@ $$
 >
 > **data center TCP(DCTCP)** 数据中心TCP
 >
+> **data plane** 数据平面
+>
 > **datagram** 数据报
 >
 > **datagram congestion control protocol(DCCP)** 数据报拥塞控制协议
+>
+> **delay,throughput,reliability(DTR)** 延迟、吞吐量、可靠性
 >
 > **denial of service(DOS)** 拒绝服务
 >
@@ -924,7 +1070,11 @@ $$
 >
 > **DNS caching** DNS缓存
 >
+> **don't fragment(DF)** 禁止分片
+>
 > **domain name system(DNS)** 域名系统
+>
+> **drop tail** 弃尾
 >
 > **duplicate data packet** 冗余数据分组
 >
@@ -964,9 +1114,17 @@ $$
 >
 > **file transfer protocol(FTP)** 文件传输协议
 >
-> **finite-state machine(FSM)** 有限状态机
+> **finite state machine(FSM)** 有限状态机
+>
+> **first come first service(FCFS)** 先来先服务
+>
+> **first input first output(FIFO)** 先进先出
+>
+> **forwarding** 转发
 >
 > **forwarding table** 转发表
+>
+> **fragment** 片
 >
 > **frame** 帧
 >
@@ -982,6 +1140,8 @@ $$
 >
 > **guided media** 导引型媒体
 >
+> **head of the line(HOL)** 线路前部
+>
 > **header line** 首部行
 >
 > **host** 主机
@@ -995,6 +1155,8 @@ $$
 > **hyper text transfer protocol(HTTP)** 超文本传输协议
 >
 > **initial sequence number(ISN)** 初始序号
+>
+> **input port** 输入端口
 >
 > **instantaneous throughput** 瞬时吞吐量
 >
@@ -1012,7 +1174,7 @@ $$
 >
 > **IP spoofing** IP哄骗
 >
-> **link-layer switch** 链路层交换机
+> **link layer switch** 链路层交换机
 >
 > **layer** 分层
 >
@@ -1020,11 +1182,13 @@ $$
 >
 > **logic communication** 逻辑通信
 >
-> **long-term evolution(LTE)** 长期演进
+> **long term evolution(LTE)** 长期演进
 >
-> **loss-tolerant application** 容忍丢失的应用
+> **longest prefix matching rule** 最长前缀匹配规则
 >
-> **low-earth orbiting(LEO)** 近地轨道
+> **loss tolerant application** 容忍丢失的应用
+>
+> **low earth orbiting(LEO)** 近地轨道
 >
 > **mail server aliasing** 邮件服务别名
 >
@@ -1038,7 +1202,11 @@ $$
 >
 > **message** 报文
 >
+> **more fragment(MF)** 还有分片
+>
 > **multi-home** 多宿
+>
+> **must be zero(MBZ)** 必须为零
 >
 > **negative acknowledgment(NAK)** 否定确认
 >
@@ -1046,11 +1214,15 @@ $$
 >
 > **network architecture** 网络体系结构
 >
+> **network service model** 网络服务模型
+>
 > **nodal processing delay** 节点处理时延
 >
 > **nonce sum(NS)** 随机数和
 >
 > **non-persistent connection** 非持续连接
+>
+> **non-preemptive priority queueing** 非抢占式优先级排队
 >
 > **offered load** 供给载荷
 >
@@ -1063,6 +1235,8 @@ $$
 > **optical network terminator(ONT)** 光纤网络端接器
 >
 > **output buffer** 输出缓存
+>
+> **output port** 输出端口
 >
 > **output queue** 输出队列
 >
@@ -1098,6 +1272,12 @@ $$
 >
 > **post office protocol-version 3(POP3)** 第三版邮局
 >
+> **precedence** 优先级
+>
+> **prefix** 前缀
+>
+> **priority queueing** 优先级排队
+>
 > **propagation delay** 传播时延
 >
 > **protocol** 协议
@@ -1114,6 +1294,8 @@ $$
 >
 > **quick UDP internet connection(QUIC)** 快速UDP互联网连接
 >
+> **random early detection(RED)** 随机早期检测
+>
 > **rarest first** 最稀缺优先
 >
 > **real time measurement** 实时测量
@@ -1126,11 +1308,19 @@ $$
 >
 > **resource record(RR)** 资源记录
 >
+> **retransmission time out(RTO)** 重传超时时间
+>
+> **round robin queueing** 循环排队
+>
 > **round trip time(RTT)** 往返时间
 >
 > **route** 路径
 >
 > **router** 路由器
+>
+> **routing** 路由选择
+>
+> **routing processor** 路由选择处理器
 >
 > **secure shell(SSH)** 安全外壳
 >
@@ -1162,6 +1352,8 @@ $$
 >
 > **socket** 套接字
 >
+> **software defined network(SDN)** 软件定义网络
+>
 > **source port number field** 源端口号字段
 >
 > **source sockets layer** 安全套接字层
@@ -1176,9 +1368,13 @@ $$
 >
 > **stream control transmission protocol(SCTP)** 流控制传输协议
 >
+> **switching fabirc** 交换结构
+>
 > **TCP friendly rate control(TFRC)** TCP友好速度控制
 >
 > **TCP splitting** TCP分岔
+>
+> **ternary content addressable memory(TCAM)** 三态内容寻址存储器
 >
 > **three way handshake** 三次握手
 >
@@ -1208,6 +1404,8 @@ $$
 >
 > **transmission rate** 传输速度
 >
+> **type of service(TOP)** 服务类型
+>
 > **unchoked** 疏通
 >
 > **unguided media** 非导引型媒体
@@ -1224,7 +1422,11 @@ $$
 >
 > **utilization** 利用率
 >
+> **weighted fair queueing(WFQ)** 加权公平排队
+>
 > **well-known port number** 周知端口号
+>
+> **work-conserving queuing** 保持工作排队
 
 ### 附录2 相关文档
 
@@ -1240,9 +1442,15 @@ $$
 >
 > IMAP相关：RFC 3501
 >
+> IPv4相关：RFC 791
+>
+> IPv6相关：RFC 2460、RFC 4291
+>
 > POP3相关：RFC 1939
 >
 > port相关：RFC 1700、RFC 3232
+>
+> router相关：RFC 3439
 >
 > SCTP相关：TFC 3286、RFC 4960
 >
