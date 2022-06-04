@@ -1106,7 +1106,7 @@ $$
 >
 > **DHCP offer message** DHCP提供报文
 >
-> DHCP request message DHCP请求报文
+> **DHCP request message** DHCP请求报文
 >
 > **digital subscriber line(DSL)** 数字用户线
 >
