@@ -26,6 +26,8 @@
 
 ​		与因特网相连的端系统提供了一个**套接字接口**，该接口规定了运行在端系统上的程序请求因特网基础设施向运行在另一个端系统上的特定目的地程序交付数据的方式。
 
+​		ICANN负责分配IP地址，管理DNS根服务器、分配域名和解决域名纷争。
+
 #### 1.2 网络边缘
 
 ​		**接入网**指将端系统物理连接到其边缘路由器的网络。**边缘路由器**是端系统到任何其他远程端系统的路径上的第一台路由器。
@@ -631,13 +633,13 @@ $$
 
 ​		在进程发送数据之前，进程间必须握手，即相互发送一些预备报文段来设置确保数据传输的参数，故TCP是**面向连接的**。
 
-​		TCP连接只能有一个客户端和一个服务端，故TCP是**点对点**的。
+​		TCP连接只能有一个客户端和一个服务器，故TCP是**点对点**的。
 
 ​		进程间建立TCP连接后，双方都可以发送/接收报文段，故TCP是**全双工服务**。
 
 ​		TCP根据ACK到达的速度来调节拥塞窗口，故TCP是**自计时**的。
 
-​		客户端先发送一个特殊的报文段，服务端用另一个特殊报文段来响应，最后，客户端用第三个特殊报文段作为响应，这种建立连接的过程被称为**三次握手**。前2个报文段不承载有效载荷，第三个报文段可以承载有效载荷。
+​		客户端先发送一个特殊的报文段，服务器用另一个特殊报文段来响应，最后，客户端用第三个特殊报文段作为响应，这种建立连接的过程被称为**三次握手**。前2个报文段不承载有效载荷，第三个报文段可以承载有效载荷。
 
 ​		TCP的双方都由一个接收缓存、一个发送缓存和几个变量组成。
 
@@ -709,21 +711,21 @@ $$
 
 ![three-way_handshake](img/three-way_handshake.png)
 
-​		1）客户端向服务端发送**SYN(报文段)**，即报文段的有效载荷为空，`SYN`为1，客户端进入`SYN_SENT`。
+​		1）客户端向服务器发送**SYN(报文段)**，即报文段的有效载荷为空，`SYN`为1，客户端进入`SYN_SENT`。
 
-​		2）服务端收到SYN后为该连接分配TCP缓存和变量，再向客户端发送**SYNACK(报文段)**，即ACK报文段的`SYN`为1，最后服务端进入`SYN_RCVD`。
+​		2）服务器收到SYN后为该连接分配TCP缓存和变量，再向客户端发送**SYNACK(报文段)**，即ACK报文段的`SYN`为1，最后服务器进入`SYN_RCVD`。
 
-​		3）客户端收到SYNACK后该连接分配TCP缓存和变量，再向服务端发送ACK，此时连接已建立，`SYN`置为0，最后服务端进入`ESTABLISHED`。服务端收到ACK后进入`ESTABLISHED`。
+​		3）客户端收到SYNACK后该连接分配TCP缓存和变量，再向服务器发送ACK，此时连接已建立，`SYN`置为0，最后服务器进入`ESTABLISHED`。服务器收到ACK后进入`ESTABLISHED`。
 
 ![four-way_handshake](img/four-way_handshake.png)
 
-​		1）客户端向服务端发送**FIN(报文段)**，即报文段的有效载荷为空，`FIN`为1，客户端进入`FIN_WAIT_1`。
+​		1）客户端向服务器发送**FIN(报文段)**，即报文段的有效载荷为空，`FIN`为1，客户端进入`FIN_WAIT_1`。
 
-​		2）服务端收到FIN后发送ACK并进入`CLOSE_WAIT`。客户端收到ACK后进入`FIN_WAIT_2`。
+​		2）服务器收到FIN后发送ACK并进入`CLOSE_WAIT`。客户端收到ACK后进入`FIN_WAIT_2`。
 
-​		3）服务端向客户端发送FIN并进入`LAST_ACK`。
+​		3）服务器向客户端发送FIN并进入`LAST_ACK`。
 
-​		4）客户端收到FIN后发送ACK并进入`TIME_wAIT`，同时设置时间等待计时器，到时后释放资源(包括端口号)并进入`CLOSED`。服务端收到ACK后释放资源并进入`CLOSED`。
+​		4）客户端收到FIN后发送ACK并进入`TIME_wAIT`，同时设置时间等待计时器，到时后释放资源(包括端口号)并进入`CLOSED`。服务器收到ACK后释放资源并进入`CLOSED`。
 
 ![tcp_state](img/tcp_state.png)
 
@@ -787,7 +789,7 @@ $$
 
 ​		在慢启动阶段，$cwnd$的初始值是$MSS$，$ssthresh$的初始值是$64KB$。每当报文段首次确认$cwnd$就增加$MSS$，即指数级增长。若出现超时导致的丢包，发送端令$ssthresh=\frac{cwnd}{2}$，$cwnd=MSS$并重新开始慢启动。当$cwnd \geqslant ssthresh$时发送端结束慢启动并进入拥塞避免阶段。当收到3个冗余ACK时，发送端结束慢启动并令$ssthresh=\frac{cwnd}{2}$，$cwnd=\frac{ssthresh}{2}+3MSS$，然后执行快速重传，最后进入快速恢复阶段。
 
-​		在不考虑处理时间的情况下，客户端发送请求到远程数据中心并收到响应大致需要$4RTT$，其中建立TCP需要$RTT$，慢启动阶段需要$3RTT$。显然，当$RTT$较大时，时延也较大。可以使用**TCP分岔**解决这一问题，即通过CDN将请求转发至邻近客户端且与远程数据中心有很大窗口的连接的前端服务端，在这种情况下响应所需时间大致是$4RTT_{FE}+RTT_{BE}+处理时间$，其中$RTT_{FE}$表示客户端与前端服务端的往返时间，$RTT_{BE}$表示前端服务端与远程数据中心的往返时间。当前端服务端与客户端足够近，就可以忽略$RTT_{FE}$，此时响应所需时间大致等于$RTT$。
+​		在不考虑处理时间的情况下，客户端发送请求到远程数据中心并收到响应大致需要$4RTT$，其中建立TCP需要$RTT$，慢启动阶段需要$3RTT$。显然，当$RTT$较大时，时延也较大。可以使用**TCP分岔**解决这一问题，即通过CDN将请求转发至邻近客户端且与远程数据中心有很大窗口的连接的前端服务器，在这种情况下响应所需时间大致是$4RTT_{FE}+RTT_{BE}+处理时间$，其中$RTT_{FE}$表示客户端与前端服务器的往返时间，$RTT_{BE}$表示前端服务器与远程数据中心的往返时间。当前端服务器与客户端足够近，就可以忽略$RTT_{FE}$，此时响应所需时间大致等于$RTT$。
 
 ​		在拥塞避免阶段，每个$RTT$内$cwnd$仅增加$MSS$。通用实现方法是若$RTT$内发送了$n$个报文段，在此期间每个报文段首次确认时$cwnd$增加$\frac{cwnd}{n}$。超时和3个冗余ACK的情况同慢启动。
 
@@ -850,6 +852,14 @@ $$
 ​		**路由选择**是指确定数据报从源到目的地的端到端路径的网络范围处理过程。路由选择所需时间通常为几秒，故通过软件来实现。
 
 ​		**网络服务模型**定义了分组在发送与接收端系统之间的端到端运输特性。
+
+​		主机与物理链路之间之间的边界叫做**接口**。路由器与其任意一条链路之间的边界也叫做接口。在技术层面上，一个IP地址与一个接口相关，而不是与包括该接口的主机/路由器相关。在公网中，除NAT接口之外的每台主机/路由器的每个接口都必须有个公网IP地址。
+
+​		IP地址一般划分为网络地址和主机地址。主机地址不能全为0/1，主机地址全为0的地址是网络地址，主机地址全为1的地址是广播地址。
+
+​		**子网掩码**用来区分IP地址的网络地址和主机地址，故必须与IP地址结合使用。子网掩码的网络地址全为1，主机地址全为0。
+
+​		第一跳路由器的地址称为**默认网关**。
 
 #### 4.1 路由器
 
@@ -954,6 +964,8 @@ $$
 
 ​		由于源到目的地路径的上的每段链路可能使用不同的链路层协议，不同协议的最大传输单元可能不同，所以可能需要将数据报分成多个较小的数据报并封装成合适的链路层帧，这些较小的数据报称为**片**。片到达目的地后需要重组成原始数据报再交给传输层。重组过程在端系统完成，因为组装会给增加协议复杂性和降低路由器的性能。
 
+![ipv4_datagram_fragmentation](img/ipv4_datagram_fragmentation.png)
+
 ​		标识、标志位以及片偏移用于分片和重组。标识是数据报的唯一值，分片时会复制到各个片中。3个标志位中第1位是保留位，第2位是禁止分片标志位，第3位是还有分片标志。DF为1时表示不能分片，MF为1时表示不是最后一个片。片偏移==以8字节为单位==表示片在原始数据报中的相对位置。
 
 ​		上层协议表示传输层所用协议的协议号。1表示ICMP，2表示IGMP，6表示TCP，17表示UDP，89表示OSPF。
@@ -962,7 +974,25 @@ $$
 
 ##### 4.2.2 IPv4编址
 
+​		每个IPv4地址长度是32位，因此共有$2^{32}$个可能的IP地址。IP地址通常使用**点分十进制表示法**。
 
+![ipv4_classful_addressing](img/ipv4_classful_addressing.png)
+
+​		IPv4**分类编制**包括A、B、C三类普通地址以及D、E两类特殊地址。A类地址一般用于大型网络，B类地址一般用于中型网络，C型地址一般用于小型网络，D类地址是多播地址，E类地址是保留地址。
+
+​		`255.255.255.255`是广播地址，若数据报的目的IP地址是该IP地址，最后封装成帧后会广播到该网络下所有节点。
+
+​		因特网的地址分配策略称为**无类别域间路由选择**。CIDR不在使用分类编址，IP地址表示为`a.b.c.d/x`。`x`表示网络地址所占的位数，该部分称为该地址的**前缀**，剩余的几位则表示主机地址。其地址掩码依然是子网掩码。使用单个网络前缀通告多个网络的情况称为**地址聚合**或**路由聚合**或**路由摘要**。
+
+​		**动态主机配置协议**允许主机自动获得IP地址、子网掩码、默认网关以及本地DNS服务器地址，故它也称为**即插即用协议**或**零配置协议**。DHCP是C/S协议，客户端即新到达的主机，若子网没有DHCP服务器则会由一个通常是路由器的DHCP中继代理，中继代理能够获取DHCP服务器。DHCP客户端与服务器使用UDP连接，服务器使用67端口，客户端使用68端口。
+
+​		1）DHCP服务器发现。新到达的DHCP客户端首先需要寻找DHCP服务器。DHCP客户端发送**DHCP发现报文**，报文段封装成数据报时源IP地址是`0.0.0.0`，目的IP地址使用广播地址。
+
+​		2）DHCP服务器提供。DHCP服务器收到DHCP发现报文后，发送包括发现报文的事务ID、推荐IP地址、子网掩码以及IP**地址租用期**的**DHCP提供报文**来响应，报文段封装成数据报时目的IP地址使用广播地址，因为子网中可能存在多个新到达的DHCP客户端。
+
+​		3）DHCP请求。DHCP客户端可能会收到多个DHCP提供报文，DHCP客户端选择一个并发送包含配置参数的**DHCP请求报**文来响应。
+
+​		4）DHCP ACK。DHCP服务器发送**DHCP ACK报文**来响应。
 
 ### 附录1 专业术语
 
@@ -975,6 +1005,10 @@ $$
 > **active queue management(AQM)** 主动队列算法
 >
 > **additive increase,multiplicative decrease(AIMD)** 加性增、乘性减
+>
+> **address aggregation** 地址聚合
+>
+> **address lease time** 地址租用期
 >
 > **alternating bit protocol** 比特交替协议
 >
@@ -1016,6 +1050,10 @@ $$
 >
 > **circuit switching** 电路交换
 >
+> **classful addressing** 分类编制
+>
+> **classless interdomain routing(CIDR)** 无类别域间路由选择
+>
 > **client** 客户端
 >
 > **cluster selection strategy** 集群选择策略
@@ -1054,6 +1092,8 @@ $$
 >
 > **datagram congestion control protocol(DCCP)** 数据报拥塞控制协议
 >
+> **default gateway** 默认网关
+>
 > **delay,throughput,reliability(DTR)** 延迟、吞吐量、可靠性
 >
 > **denial of service(DOS)** 拒绝服务
@@ -1061,6 +1101,12 @@ $$
 > **demultiplexing** 多路分解
 >
 > **destination port number field** 目的端口号字段
+>
+> **DHCP discover message** DHCP发现报文
+>
+> **DHCP offer message** DHCP提供报文
+>
+> DHCP request message DHCP请求报文
 >
 > **digital subscriber line(DSL)** 数字用户线
 >
@@ -1074,11 +1120,15 @@ $$
 >
 > **domain name system(DNS)** 域名系统
 >
+> **dotted-decimal notation** 点分十进制表示法
+>
 > **drop tail** 弃尾
 >
 > **duplicate data packet** 冗余数据分组
 >
 > **dynamic adaptive streaming over HTTP(DASH)** 经HTTP的动态适应流
+>
+> **dynamic host configuration protocol(DHCP)** 动态主机配置协议
 >
 > **ECN Echo(ECE)** 显式拥塞提醒回应
 >
@@ -1159,6 +1209,8 @@ $$
 > **input port** 输入端口
 >
 > **instantaneous throughput** 瞬时吞吐量
+>
+> **internet corporation for assigned names and numbers(ICANN)** 因特网名称与数字地址分配机构
 >
 > **internet exchange point(IXP)** 因特网交换点
 >
@@ -1262,6 +1314,8 @@ $$
 >
 > **persistent connection** 持续连接
 >
+> **plug and play protocol** 即插即用协议
+>
 > **piggyback** 捎带  
 >
 > **pipelining** 流水线
@@ -1316,6 +1370,10 @@ $$
 >
 > **route** 路径
 >
+> **route aggregation** 路由聚合
+>
+> **route summarization** 路由摘要
+>
 > **router** 路由器
 >
 > **routing** 路由选择
@@ -1367,6 +1425,8 @@ $$
 > **store and forward transmission** 存储转发传输
 >
 > **stream control transmission protocol(SCTP)** 流控制传输协议
+>
+> **subnet mask** 子网掩码
 >
 > **switching fabirc** 交换结构
 >
@@ -1427,6 +1487,8 @@ $$
 > **well-known port number** 周知端口号
 >
 > **work-conserving queuing** 保持工作排队
+>
+> **zero configuration protocol** 零配置协议
 
 ### 附录2 相关文档
 
@@ -1442,7 +1504,7 @@ $$
 >
 > IMAP相关：RFC 3501
 >
-> IPv4相关：RFC 791
+> IPv4相关：RFC 791、RFC 950、RFC 2123、RFC 4632
 >
 > IPv6相关：RFC 2460、RFC 4291
 >
