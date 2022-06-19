@@ -873,7 +873,7 @@ $$
 
 ​		在一个自治系统内运行的路由选择协议称为**自治系统内部路由选择协议**。自治系统间的路由选择协议称为**自治系统间路由选择协议**。
 
-​		因特网中所有自治系统运行相同的自治系统间路由选择协议，即**边界网关协议**。
+​		因特网中所有自治系统运行相同的自治系统间路由选择协议，即**边界网关协议**，边界网关协议还常用于实现**IP任播**。
 
 #### 4.1 路由器
 
@@ -1243,7 +1243,7 @@ forever
 
 ​		**CLUSTER_ID**用于标识路由反射器组。
 
-##### 4.5.2 路由选择
+##### 4.5.2 BGP路由选择
 
 ​		**热土豆路由选择**可以从所有可能的路由中选择到对应NEXT_HOP路由器成本最小的路由，忽略剩余端到端成本。
 
@@ -1268,6 +1268,14 @@ forever
 ​		4）使用BGP标识符来选择路由。
 
 ##### 4.5.3 IP任播
+
+​		当BGP被用于实现IP任播时，常用于DNS中。
+
+![ip_anycast_forwards_requests_to_the_closest_cdn_server](img/ip_anycast_forwards_requests_to_the_closest_cdn_server.png)
+
+​		在IP任播配置时，CDN公式为多台CDN服务器指派了==相同的IP地址==，然后这些服务器中的每一台都使用BGP来通告该IP地址。当某台BGP路由器该IP地址的多路由通告时，它将这些通告视为到同一物理位置的不同路径，配置路由选择表时，路由器将在本地使用BGP路由选择算法来确定最合适的路由。实际中CDN通常不使用IP任播，因为BGP路由选择的变化可能导致同一的TCP连接的的分组到达Web服务器的不同实例。
+
+​		在DNS系统中，IP任播常用于将DNS请求指向最近的根DNS服务器。
 
 #### 4.6 OpenFlow
 
@@ -1312,6 +1320,8 @@ forever
 > **aggregator** 聚合器
 >
 > **alternating bit protocol** 比特交替协议
+>
+> **anycast** 任播
 >
 > **application programming interface(API)** 应用程序编程接口
 >
@@ -1927,7 +1937,7 @@ forever
 >
 > IPv4相关：RFC 791、RFC 950、RFC 2123、RFC 4632
 >
-> IPv6相关：RFC 1752、RFC 2460、RFC 4291
+> IPv6相关：RFC 1546、RFC 1752、RFC 2460、RFC 4291、RFC 7094
 >
 > OSPF相关：RFC 1584、RFC 2328
 >
