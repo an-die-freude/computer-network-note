@@ -873,7 +873,7 @@ $$
 
 ​		在一个自治系统内运行的路由选择协议称为**自治系统内部路由选择协议**。自治系统间的路由选择协议称为**自治系统间路由选择协议**。
 
-​		因特网中所有自治系统运行相同的自治系统运间路由选择协议，即**边界网关协议**。
+​		因特网中所有自治系统运行相同的自治系统间路由选择协议，即**边界网关协议**。
 
 #### 4.1 路由器
 
@@ -1198,6 +1198,8 @@ forever
 
 #### 4.5 BGP
 
+##### 4.5.1 BGP
+
 ​		在BGP中，分组并不是路由到一个特定的目的IP地址，而是路由到类似于CIDR的前缀，该前缀表示一个子网或一个子网的集合。因此，路由器的转发表将具有$(x,I)$形式的表项，$x$表示例如138.116.68/22的前缀，$I$表示该路由器的某个接口的接口号。
 
 ​		BGP允许每个子网向因特网的其他部分通告它的存在，同时确保所有AS收到该通告。
@@ -1206,11 +1208,66 @@ forever
 
 ![ebgp_and_ibgp_connections](img/ebgp_and_ibgp_connections.png)
 
-​		在BGP中，每条直接连接以及所有通过该连接发送的报文称为**BGP连接**。若BGP连接跨越AS则称为**外部BGP**连接，若在同一AS则称为**内部BGP**连接。内部BGP连接==并不总是==对应物理链路。
+​		在BGP中，每条直接连接以及所有通过该连接发送的报文称为**BGP连接**。若BGP连接跨越AS则称为**外部BGP**连接，若在同一AS则称为**内部BGP**连接。内部BGP连接==并不总是==对应物理链路。建立BGP连接的两个路由器互称**BGP对等体**，其中发送BGP报文的路由器称为**BGP发言者**。
 
 ​		对于每个AS，其中的路由器是要么是**网关路由器**，要么是**内部路由器**。网关路由器位于AS边缘，内部路由器仅连接AS内部的主机和路由器。
 
-​		若需要通告前缀$x$的可达性信息，首先网关路由器3a向网关路由器2c发送eBGP报文“AS3 $x$”，然后网关路由器2c在向AS2内的所有其他路由器发送iBGP报文“AS3 $x$”，最后网关路由器2a向网关路由器1c发送eBGP报文"AS2 AS3 $x$"。
+​		若需要通告前缀$x$的可达性信息，对于跳数较多的路径，首先网关路由器3a向网关路由器2c发送EBGP报文“AS3 $x$”，然后网关路由器2c向AS2内的所有其他路由器发送IBGP报文“AS3 $x$”，最后网关路由器2a向网关路由器1c发送EBGP报文"AS2 AS3 $x$"。
+
+​		路由器通过BGP连接通告前缀时，前缀中包括一些**BGP属性**，前缀以及属性称为**路由**。BGP属性分为**公认必遵**、**公认任意**、**可选传递**和**可选非传递**。
+
+| BGP属性类别 | BGP属性类别详情                                              | 包含的BGP属性                              |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------ |
+| 公认必遵    | 所有BGP路由器必须支持，必须包含于更新报文中                  | ORIGIN、AS_PATH、NEXT_HOP                  |
+| 公认任意    | 所有BGP路由器必须支持                                        | LOCAL_PREF、ATOMIC_AGGREGATE               |
+| 可选传递    | 可以不支持，即使不支持也应该能接收包含该属性的路由并传递给邻居 | COMMUNITY、AGGREGATOR                      |
+| 可选非传递  | 可以不支持，若不支持则可以忽略包含该属性的更新报文           | MULTI_EXIT_DISC、ORIGINATOR_ID、CLUSTER_ID |
+
+​		**ORIGIN**标识路由信息的来源。
+
+​		**AS_PATH**包含了通告已通过的AS列表，可用来检测和防止通告环路，若路由器在AS_PATH中发现包含了自身所属的AS则拒绝该通告。
+
+​		**NEXT_HOP**是==AS_PATH起始路由器接口的IP地址==。对于从AS1通过AS2到$x$的路由"AS2 AS3 $x$"，NEXT_HOP是路由器2a的左边接口的IP地址。对于AS1直接路由到AS3的路由"AS3 $x$"，NEXT_HOP是路由器3d的最左边接口的IP地址。
+
+​		**LOCAL_PREF**表示路由的优先级，仅用在IBGP对等体间。
+
+​		**ATOMIC_AGGREGATE**表示路由是经过了聚合。
+
+​		**COMMUNITY**表示共享相同属性的目的地集合，用于将路由信息编组，通过组的标识决定路由策略的传递。
+
+​		**AGGREGATOR**是ATOMIC_AGGREGATE的补充，包含发起路由聚合的ASN和形成聚合路由的BGP发言者的IP地址。
+
+​		**MULTI_EXIT_DISC**用于区分同一相邻AS的多个接口。
+
+​		**ORIGINATOR_ID**用于标识路由反射器。
+
+​		**CLUSTER_ID**用于标识路由反射器组。
+
+##### 4.5.2 路由选择
+
+​		**热土豆路由选择**可以从所有可能的路由中选择到对应NEXT_HOP路由器成本最小的路由，忽略剩余端到端成本。
+
+​		使用热土豆路由选择在转发表中增加AS外部目的前缀的步骤如下：
+
+​		①从AS间路由选择协议知道可通过多个网关到达子网$x$。
+
+​		②通过AS内部路由选择协议获取的路由选择信息来计算到每个网关的最低成本路径的成本。
+
+​		③根据热土豆路由选择来选择成本最低的网关。
+
+​		④从转发表确定通往最低成本网关的接口$I$并在转发表中加入表项$(x,I)$。
+
+​		BGP实际使用的路由选择算法结合了热土豆路由选择的特点但更复杂。对应给定的目的前缀，算法的输入是到路由器已知悉且接受的到该前缀的所有路由的集合。若集合中多个路由则按下列消除原则直至最后一条路由：
+
+​		1）路由被分配LOCAL_PREF作为BGP属性之一。路由的LOCAL_PREF可能已由路由器设置，也可能已从同一AS中的另一台路由器获悉。选择具有最高LOCAL_PREF的路由。
+
+​		2）选择具有最短AS_PATH的路由。若该规则是路由选择的唯一规则，则BGP将使用DV算法决定路径，其中距离测量使用AS跳的跳数而不是路由器跳的跳数。
+
+​		3）使用热土豆路由选择，选择到NEXT_HOP路由器成本最小的路由。
+
+​		4）使用BGP标识符来选择路由。
+
+##### 4.5.3 IP任播
 
 #### 4.6 OpenFlow
 
@@ -1252,9 +1309,13 @@ forever
 >
 > **address lease time** 地址租用期
 >
+> **aggregator** 聚合器
+>
 > **alternating bit protocol** 比特交替协议
 >
 > **application programming interface(API)** 应用程序编程接口
+>
+> **atomic aggregate** 原子聚合
 >
 > **automatic repeat request(ARQ)** 自动重传请求
 >
@@ -1273,6 +1334,10 @@ forever
 > **best effort delivery service** 尽力而为交付服务
 >
 > **best effort service** 尽力而为服务
+>
+> **BGP attribute** BGP属性
+>
+> **BGP speaker** BGP发言者
 >
 > **bidirectional data transfer** 双向/全双工数据传输
 >
@@ -1428,7 +1493,7 @@ forever
 >
 > **extend simple mail transfer protocol(ESMTP)** 扩展简单邮件传输协议
 >
-> **external BGP(eBGP)** 外部BGP
+> **external BGP(EBGP)** 外部BGP
 >
 > **exponential weighted moving average(EWMA)** 指数加权移动平均
 >
@@ -1486,6 +1551,8 @@ forever
 >
 > **hostname** 主机名
 >
+> **hot potato routing** 热土豆路由选择
+>
 > **hybrid fiber coax(HFC)** 混合光纤同轴
 >
 > **hyper text transfer protocol(HTTP)** 超文本传输协议
@@ -1500,7 +1567,7 @@ forever
 >
 > **inter-autonomous system routing protocol** 自治系统间路由选择协议
 >
-> **internal BGP(iBGP)** 内部BGP
+> **internal BGP(IBGP)** 内部BGP
 >
 > **internal router** 内部路由器
 >
@@ -1544,6 +1611,8 @@ forever
 >
 > **load sensitive algorithm** 负载敏感算法
 >
+> **local preference(LOCAL_PREF)** 本地优先级
+>
 > **logic communication** 逻辑通信
 >
 > **long term evolution(LTE)** 长期演进
@@ -1569,6 +1638,8 @@ forever
 > **more fragment(MF)** 还有分片
 >
 > **multicast OSPF(MOSPF)** 多播OSPF
+>
+> **multi-exit discriminator(MED/MULTI_EXIT_DISC)** 多出口鉴别器
 >
 > **multi-home** 多宿
 >
@@ -1607,6 +1678,10 @@ forever
 > **optical line terminator(OLT)** 光纤线路端连接器
 >
 > **optical network terminator(ONT)** 光纤网络端接器
+>
+> **optional non-transitive** 可选非传递
+>
+> **optional transitive** 可选传递
 >
 > **output buffer** 输出缓存
 >
@@ -1819,6 +1894,10 @@ forever
 > **utilization** 利用率
 >
 > **weighted fair queueing(WFQ)** 加权公平排队
+>
+> **well-known discretionary** 公认任意
+>
+> **well-known mandatory** 公认必遵
 >
 > **well-known port number** 周知端口号
 >
