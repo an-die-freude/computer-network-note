@@ -875,6 +875,8 @@ $$
 
 ​		因特网中所有自治系统运行相同的自治系统间路由选择协议，即**边界网关协议**，边界网关协议还常用于实现**IP任播**。
 
+​		**存根网络**又称为桩网络或末端网络，指仅有一条(默认)路径连接到其他网络。
+
 #### 4.1 路由器
 
 ![router_architecture](img/router_architecture.png)
@@ -1229,7 +1231,7 @@ forever
 
 ​		**NEXT_HOP**是==AS_PATH起始路由器接口的IP地址==。对于从AS1通过AS2到$x$的路由"AS2 AS3 $x$"，NEXT_HOP是路由器2a的左边接口的IP地址。对于AS1直接路由到AS3的路由"AS3 $x$"，NEXT_HOP是路由器3d的最左边接口的IP地址。
 
-​		**LOCAL_PREF**表示路由的优先级，仅用在IBGP对等体间。
+​		**LOCAL_PREF**表示路由的优先级，仅用在IBGP对等体间，由==本地AS的路由选择策略==决定。
 
 ​		**ATOMIC_AGGREGATE**表示路由是经过了聚合。
 
@@ -1266,6 +1268,12 @@ forever
 ​		3）使用热土豆路由选择，选择到NEXT_HOP路由器成本最小的路由。
 
 ​		4）使用BGP标识符来选择路由。
+
+![simple_policy_scenario](img/simple_policy_scenario.png)
+
+​		所有进入接入ISP网络的流量必定是以该网络为目的地，所有离开ISP的流量必定源自该网络。
+
+​		假设A、B、C是主干提供商网络，则W、Y是接入ISP，X是**多宿接入ISP**。A、B、C直接向彼此发送流量，并向它们的客户网络提供全部的BGP信息。
 
 ##### 4.5.3 IP任播
 
@@ -1653,6 +1661,8 @@ forever
 >
 > **multi-home** 多宿
 >
+> **multi-homed access ISP** 多宿接入ISP
+>
 > **must be zero(MBZ)** 必须为零
 >
 > **NAT translation table** NAT转换表
@@ -1842,6 +1852,8 @@ forever
 > **store and forward transmission** 存储转发传输
 >
 > **stream control transmission protocol(SCTP)** 流控制传输协议
+>
+> **stub network** 存根网络
 >
 > **subnet mask** 子网掩码
 >
