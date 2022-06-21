@@ -147,6 +147,7 @@ $$
 |    SSH隧道     |    SSH     |          TCP:22           |
 |      DHCP      |   BOOTP    | UDP:67(server)/68(client) |
 |      BGP       |    BGP     |          TCP:179          |
+|    OpenFlow    |  OpenFlow  |         TCP:6653          |
 
 ##### 1.5.2 OSI模型
 
@@ -883,6 +884,8 @@ $$
 
 ​		**存根网络**又称为桩网络或末端网络，指仅有一条(默认)路径连接到其他网络。
 
+​		**网络功能虚拟化**指将用服务器、交换机和存储设备来代替复杂的中间盒。
+
 #### 4.1 路由器
 
 ![router_architecture](img/router_architecture.png)
@@ -1299,13 +1302,17 @@ forever
 
 ![components_of_the_sdn_architecture](img/components_of_the_sdn_architecture.png)
 
-##### 4.6.1 SDN
+​		控制平面由SDN控制器(或网络操作系统)以及若干网络控制应用程序(运行在网络控制服务器上)组成。控制器维护准确的网络状态信息并为网络控制应用程序提供这些信息，还为这些应用程序提供方法来监控、编程以及控制底层网络设备。
 
-​		SDN控制平面大体可以划分为SDN控制器和SDN网络控制应用程序。
+​		SDN控制器的功能可分为**通信层**、**网络范围状态管理层**和**网络控制应用层的接口**。
 
+​		﹡若SDN控制器需要控制远程设备，则需要一个协议(OpenFlow)来为SDN控制器和该设备传输信息。此外，该设备必须能够将本地观察到达的事件传输给SDN控制器。SDN控制器和受控网络设备之间的通信跨越了SDN控制器所谓的“南向”接口。
 
+​		﹡SDN控制平面做出的最终控制决策将要求SDN控制器具有网络主机、链路、交换机和其他SDN控制的设备的最新状态信息。交换机的流表包含计数器，其值可以为网络控制应用程序所用。因为控制平面的最终目标是确定各种受控设备的流表，SDN控制器可能也维护这些表的副本。
 
-#### 4.6 OpenFlow
+​		﹡SDN控制器通过它的“北向”接口与网络控制应用程序交互。该接口允许网络控制应用程序在状态管理层中读取/写入网络状态和流表。应用程序可以注册以状态更新事件时收到通知，这样它们可以采取行动以响应来自受控于SDN的设备发送的网络事件通知。
+
+##### 4.6.1 OpenFlow
 
 ​		==OpenFlow==是一个得到高度认可和成功的标准，它开创了匹配加动作转发抽象、控制器的概念以及更广泛的SDN革命。实际应用包括简单转发、负载均衡以及防火墙。
 
@@ -1326,6 +1333,32 @@ forever
 ​		﹡没有对应动作时分组将被丢弃。
 
 ​		﹡分组被转发到指定的输出端口之前，源MAC地址、目的MAC地址、以太网类型、局域网ID、局域网优先级、源IP地址、目的IP地址、服务类型、源端口、目的端口这些字段的值可以重写。
+
+​		从SDN控制器流向受控路由器的重要报文包括==配置==报文、==修改状态==报文、==读取状态==报文、==发送分组==报文。配置报文允许SDN控制器查询并设置路由器的配置参数。修改状态报文用于增加/删除/修改路由器流表中的表项并设置路由器的端口属性。读取状态报文用于从路由器的流表和端口收集统计数据以及计数器值。发送分组报文用于从受控路由器的指定端口发送特定报文，报文的有效载荷包含分组。
+
+​		从受控路由器流向SDN控制器的重要报文包括==流删除==报文、==端口状态==报文、==分组进入==报文。流删除报文用于通知SDN控制器已删除一个流表项。端口状态报文用于向SDN控制器通知端口状态的变化。分组进入报文用于分组匹配成功的分组发给SDN控制器。
+
+​		Google的B4网络使用定制的交换机，每台交换机实现了OpenFlow的扩展版并带有本地OpenFlow代理。每个OFA与网络控制服务器中的OpenFlow控制器连接，使用单独的“带外”网络，该网络不同于数据中心间传输数据中心流量的网络。OpenFlow控制器因此提供网络控制服务器和其受控交换机之间的通信。在B4中，OpenFlow控制器还执行状态管理功能，将节点与链路信息保存在网络信息数据库中。OpenFlow控制器的实现基于ONIX SDN控制器。B4网络实现了BGP和IS-IS(类似于OSPF)。
+
+##### 4.6.2 数据平面与控制平面的交互
+
+![sdn_scenario_link_state_change](img/sdn_scenario_link_state_change.png)
+
+​		Dijkstra算法是实现在每台路由器中泛洪链路状态更新，这里Dijkstra算法作为路由器外部的一个单独的程序而且路由器将链路更新发送到SDN控制器而不是彼此。
+
+​		假设OpenFlow作为通信层协议，控制平面只执行路由选择。此外，s1与s2之间的链路出现了故障。
+
+​		1）s1使用OpenFlow的端口状态报文通知SDN控制器链路状态改变。
+
+​		2）SDN控制器收到报文后通知链路状态管理器，链路状态管理器更新链路状态数据库。
+
+​		3）因为用于实现Dijkstra算法的网络控制应用程序之前已经注册，网络控制应用程序收到了链路状态更改的通知。
+
+​		4）链路状态应用程序与链路状态管理器交互以获取最新的链路状态信息，也可能会与链路状态管理层的其他组件交互，然后计算新的最低成本路径。
+
+​		5）链路状态应用程序与流表管理器交互来更新流量。
+
+​		6）流表管理器使用OpenFlow更新受影响路由器的流表项。
 
 
 
@@ -1605,6 +1638,8 @@ forever
 >
 > **inter-autonomous system routing protocol** 自治系统间路由选择协议
 >
+> **intermediate system to intermediate system(IS-IS)** 中间系统到中间系统
+>
 > **internal BGP(IBGP)** 内部BGP
 >
 > **internal router** 内部路由器
@@ -1697,6 +1732,12 @@ forever
 >
 > **network architecture** 网络体系结构
 >
+> **network control server(NCS)** 网络控制服务器
+>
+> **network functions virtualization(NFV)** 网络功能虚拟化
+>
+> **network information base(NIB)** 网络信息数据库
+>
 > **network service model** 网络服务模型
 >
 > **nodal processing delay** 节点处理时延
@@ -1712,6 +1753,10 @@ forever
 > **open shortest path first(OSPF)** 开放式最短路径优先
 >
 > **open system interconnection reference model(OSI model)** 开放式系统互联网通信参考模型
+>
+> **OpenFlow agent(OFA)** OpenFlow代理
+>
+> **OpenFlow controller(OFC)** OpenFlow控制器
 >
 > **optical Carrier(OC)** 光载波
 >
@@ -1794,6 +1839,8 @@ forever
 > **real time measurement** 实时测量
 >
 > **reliable data transfer(RDT)** 可靠数据传输
+>
+> **representational state transfer(REST)** 表征状态传递
 >
 > **request for comment(RFC)** 请求评论
 >
