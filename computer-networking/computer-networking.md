@@ -121,6 +121,8 @@ $$
 
 ​		各层的所有协议被称为**协议栈**。
 
+​		
+
 ![internet_protocol_stack_and_osi_reference_model](img/internet_protocol_stack_and_osi_reference_model.png)
 
 ##### 1.5.1 因特网协议栈
@@ -133,21 +135,22 @@ $$
 | 链路层 | 沿着路劲将数据包传递给下一个节点               | 以太网、WiFi和DOCSIS                      | 帧       |
 | 物理层 | 将帧中的一个个比特从一个节点移动到下一个节点   |                                           | 比特     |
 
-|      应用      | 应用层协议 |     传输层协议和端口      |
-| :------------: | :--------: | :-----------------------: |
-|    电子邮件    |    SMTP    |    TCP:25/465/587/2525    |
-|  远程终端访问  |   Telnet   |          TCP:23           |
-|      Web       |    HTTP    |          TCP:80           |
-|    文件传输    |    FTP     |         TCP:20/21         |
-| 远程文件服务器 |    NFS     |         UDP:2049          |
-|   流式多媒体   |  通常专用  |          TCP/UDP          |
-|   因特网电话   |  通常专用  |          TCP/UDP          |
-|    网络管理    |    SNMP    |        UDP:161/162        |
-|    域名系统    |    DNS     |          UDP:53           |
-|    SSH隧道     |    SSH     |          TCP:22           |
-|      DHCP      |   BOOTP    | UDP:67(server)/68(client) |
-|      BGP       |    BGP     |          TCP:179          |
-|    OpenFlow    |  OpenFlow  |         TCP:6653          |
+|      应用      | 应用层协议 |          传输层协议和端口           |
+| :------------: | :--------: | :---------------------------------: |
+|    电子邮件    |    SMTP    |         TCP:25/465/587/2525         |
+|  远程终端访问  |   Telnet   |               TCP:23                |
+|      Web       |    HTTP    |               TCP:80                |
+|    文件传输    |    FTP     |              TCP:20/21              |
+| 远程文件服务器 |    NFS     |              UDP:2049               |
+|   流式多媒体   |  通常专用  |               TCP/UDP               |
+|   因特网电话   |  通常专用  |               TCP/UDP               |
+|    网络管理    |    SNMP    |             UDP:161/162             |
+|    域名系统    |    DNS     |               UDP:53                |
+|    SSH隧道     |    SSH     |               TCP:22                |
+|      DHCP      |   BOOTP    |      UDP:67(server)/68(client)      |
+|      BGP       |    BGP     |               TCP:179               |
+|    OpenFlow    |  OpenFlow  |              TCP:6653               |
+|    网络管理    |    SNMP    | UDP:161/162/163或(D)TLS:10161/10162 |
 
 ##### 1.5.2 OSI模型
 
@@ -482,7 +485,7 @@ $$
 
 ​		UDP在发送报文段前传输层实体间没有握手，故UDP被称为==无连接==的。
 
-![udp_segment_structure](img/udp_segment_structure.png)
+![udp_segment_format](img/udp_segment_format.png)
 
 ​		UDP首部有四个字段，每个字段由2字节构成。
 
@@ -662,7 +665,7 @@ $$
 
 ##### 3.4.1 TCP报文段
 
-![tcp_segment_structure](img/tcp_segment_structure.png)
+![tcp_segment_format](img/tcp_segment_format.png)
 
 ​		TCP报文段包括16位**源端口**、16位**目的端口**、32位**序号**、32位**确认序号**、4位**首部长度**、3位保留字段、9个标志位、16位**窗口长度**、16位**校验和**、16位**紧急指针**以及最多40字节的的选项字段。
 
@@ -1340,6 +1343,8 @@ forever
 
 ​		Google的B4网络使用定制的交换机，每台交换机实现了OpenFlow的扩展版并带有本地OpenFlow代理。每个OFA与网络控制服务器中的OpenFlow控制器连接，使用单独的“带外”网络，该网络不同于数据中心间传输数据中心流量的网络。OpenFlow控制器因此提供网络控制服务器和其受控交换机之间的通信。在B4中，OpenFlow控制器还执行状态管理功能，将节点与链路信息保存在网络信息数据库中。OpenFlow控制器的实现基于ONIX SDN控制器。B4网络实现了BGP和IS-IS(类似于OSPF)。
 
+​		在SDN发展早期，采用单一的SDN协议(OpenFlow)和单一的SDN控制器。最近，OpenDaylight(ODL)控制器和ONOS控制器得到业界广泛支持。
+
 ##### 4.6.2 数据平面与控制平面的交互
 
 ![sdn_scenario_link_state_change](img/sdn_scenario_link_state_change.png)
@@ -1359,6 +1364,76 @@ forever
 ​		5）链路状态应用程序与流表管理器交互来更新流量。
 
 ​		6）流表管理器使用OpenFlow更新受影响路由器的流表项。
+
+#### 4.7 ICMP
+
+​		ICMP虽然是网络层协议，但ICMP报文作为IP数据包的有效载荷，类似于TCP和UDP。ICMP最典型的用途是差错报告。基于ICMP的常用程序是ping和traceroute。
+
+![icmp_message_format](img/icmp_message_format.png)
+
+| ICMP type | ICMP code | 描述                              |
+| --------- | --------- | --------------------------------- |
+| 0         | 0         | echo(ping) reply                  |
+| 3         | 0         | destination network unreachable   |
+| 3         | 1         | destination host unreachable      |
+| 3         | 2         | destination protocol unreachable  |
+| 3         | 3         | destination port unreachable      |
+| 3         | 6         | destination network unknown       |
+| 3         | 7         | destination host unknown          |
+| 4         | 0         | source quench(congestion control) |
+| 8         | 0         | echo(ping) request                |
+| 9         | 0         | router advertisement              |
+| 10        | 0         | router discovery                  |
+| 11        | 0         | TTL exceeded                      |
+| 12        | 0         | IP header bad                     |
+
+​		源抑制报文最初的目的是用于拥塞控制，即发送或对方减小发送速率。
+
+​		在traceroute中，为了确定源主机和目的主机之间的路由器的主机板和IP地址，源主机向目的主机发送了一系列的IP数据报，这些数据报都带有一个不可达的UDP端口的UDP报文段，其中第$n$个数据报的TTL为$n$。因此，当第$n$个数据报到达第$n$个路由器时TTL刚好过期，路由器丢弃数据报并向源主机发送ICMP报文(type=11,code=0)，该报文包括路由器的主机名以及IP地址。当数据报到达目的主机时，由于UDP端口不可达，目的主机会向源主机发送ICMP报文(type=3,code=3)，源主机收到该报文后停止发送数据报。
+
+#### 4.8 网络管理
+
+##### 4.8.1 网络管理
+
+​		**网络管理**包括对硬件、软件和人为元素的部署、集成和协调，以便对网络资源进行监视、测试、轮询、配置、分析、评估和控制，这样能以合理的成本满足例如实时运行性能、服务质量等需求。
+
+![components_of_network_management](img/components_of_network_management.png)
+
+​		网络管理的重要组件包括管理服务器、被管设备、MIB数据、远程代理以及SNMP。
+
+​		管理服务器是一个应用程序，通常有人的参与，并在网络运营中心的集中式管理站上运行。管理服务器用于网络管理，负责网络管理信息的收集、处理、分析以及显示。
+
+​		被管设备是被管网络中的网络设备(包括软件)。一个被管设备内可能有几个**被管对象**。这些被管对象包括被管设备中的实际硬件(例如网络接口卡是主机或路由器的一个组件)以及用于这些硬件和软件组件的配置参数(例如AS内部路由选择协议)。
+
+​		被管设备中的每个被管对象的相关信息收集在**管理信息库**中，这些信息可供管理服务器使用。一个管理信息库的对象称为SMI，可以是计数器、收到的UDP报文的数量、描述性信息或状态信息等。
+
+​		每个被管设备上都有**网络管理代理**，它是一个与管理服务器通信的进程，在管理服务器的命令和控制下在被管设备执行本地操作。
+
+​		**网络管理协议**在管理服务器与被管设备间运行，运行管理服务器查询被管设备的状态并通过代理间接地在被管设备上采取行动。代理通过网络管理协议通知管理服务器异常事件。
+
+##### 4.8.2 SNMP
+
+​		**简单网络管理协议**用于管理服务器和被管设备上的网络管理代理之间传输网络管理控制和信息报文。SNMP常用模式是请求响应模式，管理服务器向代理发送请求，代理收到请求后执行某些操作并响应请求。请求通常用于查询或修改被管设备相关的MIB对象值。另一种情况是代理向管理服务器发送未被请求的报文，该报文称为**陷阱报文**。陷阱报文是异步产生的，即不是为了响应报文，而是为了响应管理服务器要求通知的事件，用于通知管理服务器异常情况导致MIB对象值改变。
+
+| PDU类型        | 发送端-接收端                           | 描述                                                         |
+| -------------- | --------------------------------------- | ------------------------------------------------------------ |
+| GetRequest     | 管理服务器到代理                        | 获取一个或多个MIB对象值                                      |
+| GetNextRequest | 管理服务器到代理                        | 获取下一个MIB对象值                                          |
+| GetBulkRequest | 管理服务器到代理                        | 获取大数据块的值                                             |
+| InformRequest  | 管理服务器到管理服务器                  | 通知==远程==管理服务器远程访问的MIB值                        |
+| SetRequest     | 管理服务器到代理                        | 设置一个或多个MIB对象值                                      |
+| Response       | 代理到管理服务器/管理服务器到管理服务器 | 响应GetRequest、GetNextRequest、GetBulkRequest、InformRequest和SetRequest |
+| Trap           | 代理到管理服务器                        | 通知管理服务器异常事件                                       |
+
+![snmp_pdu_format](img/snmp_pdu_format.png)
+
+​		SNMP通常基于UDP，但UDP并不可靠，类似于rdt，管理服务器用Request Id来标识报文。SNMP并没有强制重传，若需要重传，管理服务器设置重传频率和周期。
+
+​		GetRequest、GetNextRequest、GetBulkRequest PDU请求的值在PDU的变量绑定部分。GetRequest、GetNextRequest、GetBulkRequest PDU的数据请求颗粒度不同， GetRequest可以请求任意一组MIB值，多个GetNextRequest可用于对MIB对象的列表或表格进行排序，GetBulkRequest用于返回大块数据，相比多个GetRequest或GetNextRequest减小了成本。代理会使用包含对象标识符以及相关值的PDU来响应。
+
+​		代理用带有"noError"错误状态的PDU来响应SetRequest。
+
+### 第五章 链路层
 
 
 
@@ -1385,6 +1460,8 @@ forever
 > **anycast** 任播
 >
 > **application programming interface(API)** 应用程序编程接口
+>
+> **asynchronous transfer mode(ATM)** 异步传输模式
 >
 > **atomic aggregate** 原子聚合
 >
@@ -1698,6 +1775,14 @@ forever
 >
 > **mail server aliasing** 邮件服务别名
 >
+> **managed device** 被管设备
+>
+> **managed object** 被管对象
+>
+> **management information base(MIB)** 管理信息库
+>
+> **managing server** 管理服务器
+>
 > **manifest file** 告示文件
 >
 > **malware** 恶意软件
@@ -1738,6 +1823,12 @@ forever
 >
 > **network information base(NIB)** 网络信息数据库
 >
+> **network management agent** 网络管理代理
+>
+> **network management protocol** 网络管理协议
+>
+> **network operations center(NOC)** 网络运营中心
+>
 > **network service model** 网络服务模型
 >
 > **nodal processing delay** 节点处理时延
@@ -1749,6 +1840,8 @@ forever
 > **non-preemptive priority queueing** 非抢占式优先级排队
 >
 > **offered load** 供给载荷
+>
+> **open network operating system(ONOS)** 开放网络操作系统
 >
 > **open shortest path first(OSPF)** 开放式最短路径优先
 >
@@ -1819,6 +1912,8 @@ forever
 > **propagation delay** 传播时延
 >
 > **protocol** 协议
+>
+> **protocol data unit(PDU)** 协议数据单元
 >
 > **provider** 提供商
 >
@@ -1906,6 +2001,8 @@ forever
 >
 > **source port number field** 源端口号字段
 >
+> **source quench** 源抑制
+>
 > **source sockets layer** 安全套接字层
 >
 > **splitter** 分配器
@@ -1919,6 +2016,8 @@ forever
 > **store and forward transmission** 存储转发传输
 >
 > **stream control transmission protocol(SCTP)** 流控制传输协议
+>
+> **structure of management information(SMI)** 管理信息结构
 >
 > **stub network** 存根网络
 >
@@ -1959,6 +2058,8 @@ forever
 > **transmission delay** 传输时延
 >
 > **transmission rate** 传输速度
+>
+> **trap message** 陷阱报文
 >
 > **tunnel** 隧道
 >
@@ -2012,6 +2113,8 @@ forever
 >
 > HTTP相关：RFC 1945、RFC 2616、RFC 7540
 >
+> ICMP相关：RFC 792
+>
 > IMAP相关：RFC 3501
 >
 > IPv4相关：RFC 791、RFC 950、RFC 2123、RFC 4632
@@ -2029,6 +2132,8 @@ forever
 > SCTP相关：TFC 3286、RFC 4960
 >
 > SMTP相关：RFC 821、RFC 1425、RFC 1511、RFC 1521、RFC 1522、RFC 5321 
+>
+> SNMP相关：RFC 3410、RFC 3416
 >
 > telnet相关：RFC 854
 >
