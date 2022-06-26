@@ -72,7 +72,7 @@
 
 ​		对于频分复用，链路的频谱由跨越链路创建的所有连接共享。在连接期间链路为每条连接专用一个频段，该频段的宽度称为**带宽**。
 
-​		对于时分复用，时间被划分为固定期间的帧，并且每个帧又被划分为固定数量的时隙。当网络跨越一条链路创建一条连接时，网络在每个帧中为该连接指定一个时隙。
+​		对于时分复用，时间被划分为固定期间的帧，称为**时间帧**，并且每个时间帧又被划分为固定数量的**时隙**。当网络跨越一条链路创建一条连接时，网络会为这个连接分配一个时隙，通常时隙的长度能够传输单个帧。
 
 ![fdm_and_tdm](img/fdm_and_tdm.png)
 
@@ -471,7 +471,7 @@ $$
 
 ​		多路复用需要**源端口号字段**^【套接字的唯一标识符】^和**目的端口号字段**^【报文段中标识目标套接字的字段】^。
 
-​		端口号是一个16位的数。0~1023之间的端口称为**周知端口号**。
+​		端口号的长度是16位。0~1023之间的端口称为**周知端口号**。
 
 ​		**序号**用于为从发送端流向接收端的分组按序编号。
 
@@ -1457,13 +1457,85 @@ forever
 
 ​		运行链路层协议的设备称为**节点**。连接相邻节点的通信信道称为**链路**。
 
-​		链路层提供的服务包括封装成帧、链路接入、可靠交付、差错检测和纠正。
+​		链路层提供的服务包括**封装成帧**、**链路接入**、**可靠交付**、**差错检测和纠错**。
 
 ![relationship_of_network_adapter_to_other_host_components](img/relationship_of_network_adapter_to_other_host_components.png)
 
 ​		通常链路层是通过**网络适配器**实现的，网络适配器也成为**网络接口卡**。网络适配器的核心是链路层控制器，通常是一个实现了很多链路层服务的专用芯片。因此，链路层控制器的大部分功能(封装成帧、链路接入和差错检测)是通过硬件实现的。链路层的软件部分实现更高级别的链路层功能(组装链路层寻找信息和激活控制器硬件)。
 
-#### 6.1 差错检测和纠正
+#### 6.1 差错检测和纠错
+
+​		**前向纠错**指接收端检测并纠错。
+
+​		传输层通常由主机中的软件实现并作为主机操作系统的一部分，传输层的差错检验同样是通过软件实现的，故传输层使用了更简单快速的差错检测(例如校验和)。而链路层的差错检测通常在网络适配器中的专用硬件实现，可以快速执行更复杂的CRC操作。
+
+![single_bit_even_parity](img/single_bit_even_parity.png)
+
+​		最简单的差错检测技术是用单个**奇偶校验位**。假设待发送的信息$D$有$d$位，若使用偶校验，发送端只需要再加上1位，使得这$d+1$位有偶数个1，若使用奇校验则$d+1$位中有奇数个1。显然这种方案只能检测出奇数比特的差错。
+
+![two_dimensional_even_parity](img/two_dimensional_even_parity.png)
+
+​		**二维奇偶检验**可以检测出单比特的错误并纠错，只能检测错两比特的错误。
+
+​		另一种差错检测技术是校验和，比较简单的校验和方法就是将$d$位数据看作$k$位整数的序列化，再将这$k$位整数相加并将得到的和用作差错检测位。**因特网校验和**就基于这种方法，即将待发送数据字节视作16位的整数并求和，求和时需要回卷，求和后再取反码，这个反码设置为分组首部的校验和字段。接收端收到分组后用同样的方式(包括校验和)求和取反码，若结果全为1则表示没有出现差错。
+
+![crc](img/crc.png)
+
+​		现在常用的差错检测技术是**循环冗余校验编码**，循环冗余校验编码也称为多项式编码，因为该编码将待发送的位串视作多项式，其系数是位串中的0和1，对位串的操作被视为多项式算术。
+
+![sample_crc_calculation](img/sample_crc_calculation.png)
+
+​		所有的CRC都采用模2运算，模2运算==不考虑进位和借位==，模2加法和模2减法等价于操作数的异或运算$\oplus$，模2乘法和模2除法运算规则与二进制中的乘法和除法相同。
+
+​		依然假设待发送的数据$D$有$d$位，发送端接收端必须先就$r+1$位模式(二进制形式)达成一致，称为**生成多项式**，用$G$表示，$G$的最高有效位必须是1并且使用模2运算时$d+r$位模式(二进制形式)能整除$G$，若有余数则说明出现了差错。
+
+​		根据二进制乘法中乘$2^k$相当于左移$k$位的特性，$d+r$位模式可以表示为$D\times 2^r\oplus R$。
+$$
+\begin{align}
+D\times 2^r \oplus R&=nG\\
+D\times 2^r\oplus R\oplus R&=nG\oplus R\\
+D\times 2^r&=nG \oplus R\\
+\end{align}
+$$
+​		显然，$R= D\times 2^r \pmod{ G}$。
+
+​		CRC能检测出奇数比特的差错，而且CRC能检测出小于$r+1$位的差错，在适当的假设下还可以以$1-\frac{r}{2}$的概率检测出大于$r+1$位的差错。
+
+#### 6.2 多路访问链路和协议
+
+​		**点对点链路**由链路一端的单个发送端和链路另一端的单个接收端组成，相关协议包括PPP和HDLC。
+
+​		**广播**指当任何节点通过广播信道传输帧时其他所有节点都会收到该帧的副本。**广播链路**可以有多个发送端和接收端都连接到同一共享广播信道。
+
+​		因为所有的节点都能传输帧，所有可能多个节点会同时传输帧，此时，传输的帧在所有接收端**碰撞**，涉及此次碰撞的所有帧都会丢失。
+
+​		**多路访问**指多个节点共享同一信道，其中人员节点发送的帧可以被多个节点接收。多路访问协议分为**信道划分协议**、**随机接入协议**和**轮流协议**。
+
+​		在理想情况下，速度为$R(b/s)$的广播信息的，多路信道应该具有以下理想特性：
+
+​		1）当仅有一个节点发送数据时，该节点吞吐量为$R(b/s)$。
+
+​		2）当$M$个节点发送数据时，每个节点的吞吐量为$\frac{R}{M}(b/s)$。
+
+​		3）协议是去中心化的，即不会因为主节点故障而导致整个系统崩溃。
+
+​		4）协议是简单，故实现成本也不贵。
+
+##### 6.2.1 信道划分协议
+
+​		[时分复用和频分复用](#1.3.2 电路交换)可以用于信道划分。
+
+​		时分复用消除了碰撞而且很公平，每个节点在每个时间帧内都获得了专用传输速度$\frac{R}{N}(b/s)$。但是时分复用有两个主要缺点，首先是节点的平均速度被限制在$\frac{R}{N}(b/s)$，其次是节点必须等待传输序列的轮次。
+
+​		频分复用也消除了碰撞并且很公平，每个节点都获得了专用带宽$\frac{R}{N}(b/s)$。但频分复用的缺点同样是带宽的限制。
+
+​		另一种信道划分协议是**码分多址**，码分多址对每个节点分配了不同的编码，每个节点使用它的唯一编码来对待发送的数据进行编码。若精心选择编码，码分多址既可以保证不同节点同时传输，又可以保证它们对应的接收端仍能正确地接收数据。
+
+##### 6.2.2 随机接入协议
+
+​		
+
+​		
 
 ### 附录1 专业术语
 
@@ -1539,6 +1611,8 @@ forever
 >
 > **centralized routing algorithm** 集中式路由选择算法
 >
+> **channel partitioning protocol** 信道划分协议
+>
 > **choke packet** 抑制分组
 >
 > **circuit** 电路
@@ -1552,6 +1626,8 @@ forever
 > **client** 客户端
 >
 > **cluster selection strategy** 集群选择策略
+>
+> **code division multiple access(CDMA)** 码分多址
 >
 > **communication link** 通信链路
 >
@@ -1580,6 +1656,8 @@ forever
 > **cumulative acknowledgement** 累积确认
 >
 > **customer** 客户
+>
+> **cyclic redundancy check(CRC)** 循环冗余校验
 >
 > **data center** 数据中心
 >
@@ -1665,6 +1743,8 @@ forever
 >
 > **event based programming** 基于事件的编程
 >
+> **error detection and correction(EDC)** 差错检测和纠错
+>
 > **explicit congestion notification(ECN)** 显式拥塞通知
 >
 > **extend simple mail transfer protocol(ESMTP)** 扩展简单邮件传输协议
@@ -1693,6 +1773,8 @@ forever
 >
 > **first input first output(FIFO)** 先进先出
 >
+> **forward error correction(FEC)** 前向纠错
+>
 > **forwarding** 转发
 >
 > **forwarding table** 转发表
@@ -1718,6 +1800,8 @@ forever
 > **head of the line(HOL)** 线路前部
 >
 > **header line** 首部行
+>
+> **high-level data link control(HDLC)** 高级数据链路控制
 >
 > **hop by hop options** 逐跳选项
 >
@@ -1825,6 +1909,8 @@ forever
 >
 > **multicast OSPF(MOSPF)** 多播OSPF
 >
+> **multiple access** 多路访问
+>
 > **multi-exit discriminator(MED/MULTI_EXIT_DISC)** 多出口鉴别器
 >
 > **multi-home** 多宿
@@ -1907,6 +1993,8 @@ forever
 >
 > **packet switching** 分组交换
 >
+> **parity bit** 奇偶校验位
+>
 > **passive optical network(PON)** 被动光纤网络
 >
 > **path** 路径
@@ -1960,6 +2048,8 @@ forever
 > **queuing delay** 排队时延
 >
 > **quick UDP internet connection(QUIC)** 快速UDP互联网连接
+>
+> **random access protocol** 随机接入协议
 >
 > **random early detection(RED)** 随机早期检测
 >
@@ -2033,6 +2123,8 @@ forever
 >
 > **socket** 套接字
 >
+> **slot** 时隙
+>
 > **software defined network(SDN)** 软件定义网络
 >
 > **source port number field** 源端口号字段
@@ -2059,7 +2151,9 @@ forever
 >
 > **subnet mask** 子网掩码
 >
-> **switching fabirc** 交换结构
+> **switching fabric** 交换结构
+>
+> **taking-turns protocol** 轮流协议
 >
 > **TCP friendly rate control(TFRC)** TCP友好速度控制
 >
@@ -2070,6 +2164,8 @@ forever
 > **three way handshake** 三次握手
 >
 > **time division multiplexing(TDM)**  时分复用
+>
+> **time frame** 时间帧
 >
 > **time to live(TTL)** 生存时间
 >
@@ -2100,6 +2196,8 @@ forever
 > **tunnel** 隧道
 >
 > **tunneling** 建立隧道
+>
+> **two dimensional parity** 二维奇偶检验
 >
 > **type of service(TOP)** 服务类型
 >
