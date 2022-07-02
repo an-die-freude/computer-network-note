@@ -1748,9 +1748,39 @@ $$
 
 ​		除了VLAN除了基于接口，还可以基于其他方式，例如MAC地址和网络层协议等。在基于MAC地址中的VLAN中会为VLAN指定MAC地址集。VLAN也可以跨IP路由器扩展，允许LAN岛连接在一起形成全球性的VLAN。
 
-#### 6.4 链路层虚拟化
+#### 6.4 MPLS
 
-##### 6.4.1 MPLS
+​		为了提供路由器的转发速度，MPLS采用了虚电路网络的一个关键概率：固定长度标签，其目标是在可能的情况下，标记数据报并允许路由器基于固定长度标签转发数据报，通常与IP协同，来提供转发速度。
+
+​		MPLS是一种分类转发技术，它将具有相同转发处理方式的分组归类，称为**转发等价类**。
+
+![mpls_label](img/mpls_label.png)
+
+​		**MPLS标签栈**表示MPLS首部的排序集合。靠近链路层帧的MPLS标签称为栈顶标签或外层标签，靠近网络层数据报的MPLS标签称为栈底标签或内层标签。MPLS标签栈按先进先出方式组成标签，从栈顶开始处理标签。
+
+​		MPLS首部位于链路层帧首部和网络层数据报首部之间。MPLS首部包括20位**标签**、3位**实验**、1位**栈底标识**和8位的**生存时间**。
+
+​		﹡标签用来标识分组所属FEC。
+
+​		﹡实验常用于**服务分类**。
+
+​		﹡栈底标识值为1时表示为最底层标签。
+
+​		﹡生存时间与[IPv4数据报](#4.2.1 IPv4数据报)中的生存时间相同。
+
+​		支持MPLS的路由器称为**标签交换路由器**，MPLS帧仅能标签交换路由器之间传输。LSR通过在其转发表中查找MPLS标签来转发MPLS帧，然后将数据报移动到对应的输出接口。
+
+![mpls_enhanced_forwarding](img/mpls_enhanced_forwarding.png)
+
+​		R1-R4是LSR，R5和R6是标准IP路由器。R1已向R2、R3通告可以路由到A，MPLS标签为6的帧将被转发到A。R3已向R4通告可以到达A和D，MPLS标签为10的帧将被转发到A，MPLS标签为12的帧将被转发到D。R2已向R4通告可以到达A，MPLS标签为10的帧将被转发到A。与交换LAN或ATM网络一样，R1-R4路由器的转发与IP数据报无关。
+
+​		MPLS是一种简单形式的**流量工程**，其中ISP可以覆盖常规的IP路由并强制一些流量沿着一条链路传输到指定目的地，而其他流量则沿着另一条链路流向同一目的地。
+
+​		MPLS可用于执行MPLS转发路径的快速恢复，例如用过预先计算的故障转移链路重新路由流量来响应链路故障。
+
+​		MPLS可用于来实现**虚拟专用网**，ISP使用支持MPLS的网络将客户的各种网络连接在一起。MPLS还可用于将VPN客户端使用的资源和地址与跨ISP网络的其他用户的资源和地址隔离。
+
+#### 6.5 数据中心网络
 
 ### 附录1 专业术语
 
@@ -1843,6 +1873,8 @@ $$
 > **circuit** 电路
 >
 > **circuit switching** 电路交换
+>
+> **class of service(COS)** 服务分类
 >
 > **classful addressing** 分类编制
 >
@@ -2008,6 +2040,8 @@ $$
 >
 > **forwarding** 转发
 >
+> **forwarding equivalence class(FEC)** 转发等价类
+>
 > **forwarding table** 转发表
 >
 > **fragment** 片
@@ -2093,6 +2127,8 @@ $$
 > **intra-autonomous system routing protocol** 自治系统内部路由选择协议
 >
 > **IP spoofing** IP哄骗
+>
+> **label switching router(LSR)** 标签交换路由器
 >
 > **layer** 分层
 >
@@ -2436,6 +2472,8 @@ $$
 >
 > **tracker** 追踪器
 >
+> **traffic engineering(TE)** 流量工程
+>
 > **traffic intensity** 流量强度
 >
 > **traffic volume** 通信容量
@@ -2478,6 +2516,8 @@ $$
 >
 > **virtual local area network(VLAN)** 虚拟局域网
 >
+> **virtual private network(VPN)** 虚拟专用网
+>
 > **weighted fair queueing(WFQ)** 加权公平排队
 >
 > **well-known discretionary** 公认任意
@@ -2518,6 +2558,8 @@ $$
 >
 > IPv6相关：RFC 1546、RFC 1752、RFC 2460、RFC 4291、RFC 7094、RFC 8200
 >
+> MPLS相关：RFC 3031、RFC 3032、RFC 3034、RFC 3035
+>
 > OSPF相关：RFC 1584、RFC 2328
 >
 > POP3相关：RFC 1939
@@ -2531,6 +2573,8 @@ $$
 > SMTP相关：RFC 821、RFC 1425、RFC 1511、RFC 1521、RFC 1522、RFC 5321 
 >
 > SNMP相关：RFC 3410、RFC 3416
+>
+> TE相关：RFC 2702、RFC 3272、RFC 3346
 >
 > telnet相关：RFC 854
 >
