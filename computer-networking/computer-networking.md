@@ -1665,11 +1665,11 @@ effciency\approx \frac{1}{1+5\frac{d_{prop}}{d_{trans}}}
 $$
 ​		$d_{prop}$表示信号能量在任意两个网络适配器之间传输所需的最长时间。$d_{trans}$表示传输最大长度的帧所需时间。
 
-​		假设$S$表示类似于时隙ALOHA的时隙，$S$比传输一帧的时间小很多且$S>d_{prop}$，这样在时隙结束前所有节点都能检测到碰撞。所有帧的长度固定，用$L$表示，$L=kRS$，其中$R$是信道的传输速度，$k$是一个大整数。此外，有$N$个节点且每个节点有无限帧待发送。每个节点在时隙内传输帧的概率是$p$。$Y$表示时隙的序号。每$m$个时隙中有一个成功时隙且成功时隙是最后一个时隙。时隙内成功传输帧的概率是$\beta$，$\beta=Np(1-p)^{N-1}$。非成功时隙的个数记为$x$，成功时隙的个数记为$k$。
+​		假设$S$表示类似于时隙ALOHA的时隙，$S$比传输一帧的时间小很多且$S>d_{prop}$，这样在时隙结束前每个节点都能检测到其他节点的信号能量。所有帧的长度固定，用$L$表示，$L=kRS$，$R$表示信道的速度，即成功传输帧需要连续$k$个传输成功的时隙。由于时隙结束前每个节点都能检测到其他节点的信号能量，首个传输成功的时隙后的$k-1$个时隙无时隙竞争。此外，有$N$个节点且每个节点有无限帧待发送。每个节点在时隙内传输的概率是$p$。每$x$个传输失败的时隙后有传输成功的时隙。时隙内成功传输的概率是$\beta$，$\beta=Np(1-p)^{N-1}$。$Y$表示时隙序号。
 $$
-P(Y=m)=\beta (1-\beta)^{m-1}
+P(Y=x+1)=\beta (1-\beta)^{x}
 $$
-​		根据几何分布期望，$E(Y)=\frac{1}{\beta}$，则$E(x)=E(Y)-1=\frac{1-\beta}{\beta}=\frac{1-Np(1-p)^{N-1}}{Np(1-p)^{N-1}}$。
+​		根据几何分布期望，$E(x+1)=\frac{1}{\beta}$，则$E(x)=\frac{1-\beta}{\beta}=\frac{1-Np(1-p)^{N-1}}{Np(1-p)^{N-1}}$。
 $$
 \begin{align}
 effciency&=\frac{k}{k+x}\\
@@ -1873,9 +1873,55 @@ $$
 
 ### 第六章 无线网络和移动网络
 
+​		无线网络包括**无线主机**、**无线链路**、**基站**和**网络基础设施**。主机通过无线通信链路连接到基站或无线主机，这里的连接指的是主机位于基站的无线通信范围内且主机通过基站来中继和更大的网络。
+
+​		连接到基站的主机通常以**基础架构模式**运行，因为所有传统网络服务都是由主机通过连接到基站的网络提供。在**自组织网络**中，无线主机没有可连接的此类基础设施，主机本身必须提供这些传统网络服务。
+
+​		当移动主机超出一个基站额度范围并进入另一个基站的范围时，它会将其连接点更改为更大的网络，这个过程称为**切换**。
+
+![part_of_wireless_network_standards](img/part_of_wireless_network_standards.png)
+
+​		无线网络可以按基站与主机通信时经过单跳还是多跳以及网络中是否存在基础设施进行分类。
+
+​		﹡**单跳且基于基础设施**的无线网络中有一个连接到更大的有线网络的基站，该基站与无线主机之间的所有通信都仅经过单挑。
+
+​		﹡**单跳且无基础设施**的无线网络中的节点可以协调其他节点的传输。
+
+​		﹡**多跳且基于基础设施**的无线网络中有一个有线连接到更大的网络的基站，为了通过基站通信，其中部分节点需要通过其他节点中继它们的通信。
+
+​		﹡**多跳且无基础设施**的无线网络中没有基站，节点可能需要其他节点中继。若节点是移动的则称为**移动自组织网络**。若移动节点是车载的则称为**车载自组织网络**。
+
+#### 6.1 无线链路和网络特征
+
+​		相比有线链路，无线链路存在**信号强度的衰减**、**其他源的干扰**以及**多径传播**。
+
+​		﹡电磁波穿过物体时信号强度会衰减。随着传播距离的增加，电磁波信号强度也会降低，称为**路径损耗**。
+
+​		﹡同一频段的电磁波将互相干扰，此外，环境中的其他电磁波也会导致干扰。
+
+​		﹡当部分电磁波在物体或地面上反射时，在发送端和接收端之间经过了不同长度的路径，称为**多径传播**，这样会导致接收端收到的信号模糊。
+
+​		无线链路相比有线链路更容易出现比特差错，因此无线链路不仅采用了[CRC编码](#6.1 差错检测和纠错)，还使用了链路层ARQ协议来重传受损的帧。
+
+​		接收端收到的电磁信号是发送端传输的原始信号的退化形式(信号衰减和多径传播等)和环境中的噪声(干扰信号)的结合。**信噪比**是收到的信号和噪声强度的相对值，即以10为底接收到的信号的振幅的对数与噪声的振幅之比的20倍。
+
+![ber_and_transmission_rate_and_snr](img/ber_and_transmission_rate_and_snr.png)
+
+​		对于给定的调制技术，SNR越高，BER越低，发送端可以通过增加传输速度来增加SNR，进而降低BER。增加传输速度会消耗更大的能量而且可能干扰其他发送端的传输，传输功率达到某个阈值时收益将微乎其微。
+
+​		对于给定的SNR，传输速度越高，BER越高。
+
+​		物理层调制技术的动态选择可用于适配信道条件的调制技术。
+
+![sample_cmda_example](img/sample_cmda_example.png)
+
+
+
 ### 附录1 专业术语
 
 > **access point(AP)** 访问接入点
+>
+> **ad hoc network** 自组织网络
 >
 > **acknowledgment(ACK)** 确认
 >
@@ -1915,6 +1961,8 @@ $$
 >
 > **bandwidth sensitive application** 带宽敏感的应用
 >
+> **base station** 基站
+>
 > **Berkeley Internet Name Domain(BIND/NAMED)** DNS服务器软件
 >
 > **best effort delivery service** 尽力而为交付服务
@@ -1930,6 +1978,8 @@ $$
 > **bidirectional data transfer** 双向/全双工数据传输
 >
 > **binary exponential back off** 二进制指数退避
+>
+> **bit error ratio(BER)** 比特差错率
 >
 > **bootstrap protocol(BOOTP)** 引导程序协议
 >
@@ -2163,6 +2213,8 @@ $$
 >
 > **guided media** 导引型媒体
 >
+> **hand off** 切换
+>
 > **head of the line(HOL)** 线路前部
 >
 > **header line** 首部行
@@ -2184,6 +2236,8 @@ $$
 > **hybrid fiber coax(HFC)** 混合光纤同轴
 >
 > **hyper text transfer protocol(HTTP)** 超文本传输协议
+>
+> **infrastructure mode** 基础架构模式
 >
 > **ingress port** 输入端口
 >
@@ -2281,9 +2335,13 @@ $$
 >
 > **message** 报文
 >
+> **mobile ac hoc network(MANET)** 移动自组织网络
+>
 > **more fragment(MF)** 还有分片
 >
 > **multicast OSPF(MOSPF)** 多播OSPF
+>
+> **multipath propagation** 多径传播
 >
 > **multiple access** 多路访问
 >
@@ -2377,13 +2435,15 @@ $$
 >
 > **path** 路径
 >
+> **path loss** 路径损耗
+>
 > **payload field** 有效载荷字段
 >
 > **peer** 对等
 >
 > **peer to peer(P2P)** 点对点
 >
-> penultimate hop popping(PHP) 倒数第二跳弹出
+> **penultimate hop popping(PHP)** 倒数第二跳弹出
 >
 > **persistent connection** 持续连接
 >
@@ -2494,6 +2554,8 @@ $$
 > **shared medium** 共享媒体
 >
 > **shortest path** 最短路径
+>
+> **signal-to-noise ratio(SNR)** 信噪比
 >
 > **silent period** 静默期
 >
@@ -2617,6 +2679,8 @@ $$
 >
 > **utilization** 利用率
 >
+> **vehicular ad hoc network(VANET)** 车载自组织网络
+>
 > **VLAN  trunking** 虚拟局域网中继/干道
 >
 > **virtual local area network(VLAN)** 虚拟局域网
@@ -2630,6 +2694,8 @@ $$
 > **well-known mandatory** 公认必遵
 >
 > **well-known port number** 周知端口号
+>
+> **wireless communication link** 无线通信链路
 >
 > **work-conserving queuing** 保持工作排队
 >
