@@ -1939,7 +1939,7 @@ $$
 
 ##### 6.7.1 802.11体系结构
 
-![802.11_lan_architecture](img/802.11_lan_architecture.png)
+![802.11_wlan_architecture](img/802.11_wlan_architecture.png)
 
 ​		802.11体系结构的基本构建块是**基本服务集**。BSS包含一个或多个无线主机和一个称为**接入点**的中央基站。在常规的家庭网络中，一个AP和一个路由器(通常集成为一个单元)将BSS连接到因特网。
 
