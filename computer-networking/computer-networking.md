@@ -2057,17 +2057,61 @@ $$
 
 ##### 5.8.1 3G蜂窝网
 
-![3g_system_architecture](img\3g_system_architecture.png)
+![3g_network_architecture](img\3g_network_architecture.png)
 
-​		相比2G，3G UMTS不再使用GSM的FDMA/TDMA方案，而是在TDMA时隙内使用**直接序列宽带码分多址**。与WCDMA规范相关的数据分为称为高速分组接入。
+​		相比2G，3G UMTS不再使用GSM的FDMA/TDMA方案，而是在TDMA时隙内使用**直接序列宽带码分多址**，类似于[DOCSIS](#5.2.4 DOCSIS)。与WCDMA规范相关的数据分为称为高速分组接入。
 
 ​		3G核心蜂窝数据网络将无线接入网络连接到公网。鉴于现有蜂窝语音网络存在大量现有基础设施，因此3G保持现有核心GSM蜂窝语音网络不变，同时添加额外的蜂窝数据功能到现有的蜂窝语音网络。
 
 ​		3G核心网中有**GRRS服务支持节点**和**GRPS网关支持节点**这两种节点。SGSN负责向与其连接的无线接入网中的移动节点发送/接收数据报。SGSN与同一区域的蜂窝语音网络的MSC交互，提供用户授权和切换，维护活跃移动节点的蜂窝信息，并在无线接入网络中的移动节点和GGSN间转发数据报。GGSN充当网关，将多个SGSN连接到公网。因此，GGSN是源自移动节点的数据报进入公网之前经过的最后一个3G基础设施。对外界而言，GGSN无异于其他网关路由器。GGSN网络内3G节点的移动性对外隐藏。
 
-​		3G**无线接入网络**是移动节点接触的无线首跳网络。**无线网络控制器**通常控制多个蜂窝的BTS。每个蜂窝的移动节点和BTS之间通过无线链路连接。RNC通过MSC连接到连接到电路交换蜂窝语音网络，并通过SGSN连接到公网。3G蜂窝语音服务和数据服务虽然使用不同的核心网络，但它们共享第一跳和最后一跳无线接入网络。
+​		3G**无线接入网络**是移动节点接触的无线首跳网络。**无线网络控制器**(又称为NodeB )通常控制多个蜂窝的BTS。每个蜂窝的移动节点和BTS之间通过无线链路连接。RNC通过MSC连接到连接到电路交换蜂窝语音网络，并通过SGSN连接到公网。3G蜂窝语音服务和数据服务虽然使用不同的核心网络，但它们共享第一跳和最后一跳无线接入网络。
 
 ##### 5.8.2 4G蜂窝网
+
+![4g_network_architecture](img\4g_network_architecture.png)
+
+​		相比3G，4G使用了**全IP核心网络**(语音和流量全都承载在IP数据报中)和增强的无线接入网络，而且4G对数据平面和控制平面进行了分离。
+
+​		**eNodeB**是2G的基站和3G的RNC的逻辑后代。在控制平面中，eNodeB代表UE来处理注册和移动信令流量。在数据平面中，eNodeB负责在UE和P-GW之间转发数据报。UE数据报在eNodeB中封装并通过4G网络的全IP增强型分组核心(EPS)以隧道形式传输到P-GW。eNodeB与P-GW之间的隧道类似于[IPv6](#4.2.4 IPv6)中IPv4迁移到IPv6的隧道，这些隧道可能具有相关的QOS保证。
+
+​		**分组数据网络网关**为UE分配IP地址并保证QOS的执行。作为隧道端点，它负责封装和解封装发给UE和来自UE的数据报。
+
+​		**服务网关**是数据平面移动锚点，即所有UE流量都将通过。S-GW还负责收费/计费以及合法的流量拦截。
+
+​		**归属用户服务器**容纳包括漫游接入能力、QOS配置文件和认证信道的UE信息，它从UE归属蜂窝提供商获得这些信息。
+
+​		**移动性管理实体**代表驻留在其控制的蜂窝中的UE执行连接和移动性管理，它从HHS接收UE订阅信息。
+
+​		LTE在下行信道使用组合FDM/TDM，称为**正交频分复用**。在LTE中，每个活跃移动节点在一个或多个信道频率中被分配一个或多个0.5$ms$时隙。分配的时隙越多，移动节点能够获取的传输速度越高。移动节点之间的时隙(重)分配可以每$ms$执行一次。
+
+​		LTE标准没有规定分配移动节点特定的时隙。允许那些移动节点在特定频率上的给定时隙中进行传输由LET设备供应商或网络运营商提供的调度算法决定。使用机会调度，将物理层协议与发送端和接收端之间的信道条件相互匹配，并根据信道条件选择分组将发送到达接收端，使RNC能够充分利用无线链路。此外，用户的优先级和约定的服务级别可用于调度下行分组传输。高级LTE通过向移动节点分配聚合信道提供数百$M(b/s)$的下行带宽。
+
+​		另外一种4G无线是使用802.16的WiMAX。
+
+#### 5.9 移动管理
+
+![initial_elements_of_a_mobile_network_architecture](img\initial_elements_of_a_mobile_network_architecture.png)
+
+​		在网络环境中，一个移动节点的永久归属地称为**归属网络**。归属网络内代表移动节点执行移动管理的实体称为**归属代理**。移动节点当前所在的网络称为**外部网络**或**被访网络**，外部网络中帮助移动节点实现移动管理的实体称为**外部代理**。希望与移动节点通信的实体称为**通信者**。
+
+​		当移动节点驻留在外来网络中时，所有发往该节点永久地址的流量需要路由到外地网络。为了实现这一点，一种方法是外部网络向所有其他网络通告移动节点驻留在其网络中，这通常可以通过交换域内和域间路由选择信息实现，而且只需要对现有路由选择基础设施进行少量改动即可。外部网络只需向它的邻居通告有一条特定的路由可以到达该移动节点的永久地址。类似于[DV算法](#4.3.2 DV算法)，作为更新路由选择信息和转发表的一个流程，这些邻居在整个网络传播此路由信息。当移动节点离开该外部网络并加入另一个外部网络是，新外部网络将通告一条通向该移动节点的新路由，而旧外部网络将撤销与该移动节点相关的路由选择信息。而实际中才用了另一种方法，将移动功能从网络核心转移到网络边缘，主要通过移动节点的归属网络来实现。
+
+​		外部代理放置于外部网络的边缘路由器上，外部代理的作用之一是为移动节点创建一个所谓的**转交地址**，COA的网络部分与外部网络CIDR的网络部分相同。因此一个移动节点可与永久地址以及COA关联。外部代理的另一个作用是通知归属代理移动节点驻留在其网络中且具有给定的COA。移动节点可以(通过DHCP等协议)获取外部网络的COA并通知给归属代理。
+
+​		当移动节点连接到外部网络时需要向外部代理注册，离开时也需要注销。此外，外来代理将向归属代理注册移动节点的COA，当移动节点离开网络不需要显式注销COA，因为移动节点再次连接外部网络时，新COA的注册会完成注销。
+
+##### 5.9.1 移动节点的间接路由选择
+
+![indirect_routing_to_a_mobile_node](img\indirect_routing_to_a_mobile_node.png)
+
+​		在**间接路由选择**中，通信者是将数据报寻址到移动节点的永久地址并将数据报发送到网络中，并不知道移动节点是驻留在归属网络还是外部网络。这些数据报首先路由到移动节点的归属网络。归属代理收到数据报后将其转发给外部代理，然后外部代理在转发给移动节点。若移动节点需要发送数据报给通信者，可以直接发送给通信者。
+
+​		为了确保通信者发送的数据报的完好无损以及对移动节点隐藏数据报经过了归属代理的转发，可以建立类似于[IPv6](#4.2.4 IPv6)中IPv4迁移到IPv6的隧道，即归属代理将通信者的数据报封装在另一个数据报。归属代理将移动节点的COA作为封装后的数据报的目的IP地址来将数据报路由到外部网络。外部代理收到封装的数据报后拆封再将原始数据报转发给移动节点。
+
+​		间接路由选择需要==移动节点到外部代理的协议==、==外部代理到归属代理的注册协议==、==归属代理数据报封装协议==以及==外部代理拆封协议==这些网络层新功能。
+
+##### 5.9.2 移动节点的直接路由选择
 
 ### 附录1 专业术语
 
@@ -2167,6 +2211,8 @@ $$
 >
 > **canonical hostname** 规范主机名
 >
+> **care-of address(COA)** 转交地址
+>
 > **carrier sense multiple access(CSMA)** 载波侦听多路访问
 >
 > **carrier sense multiple access with collision avoidance(CSMA/CA)** 带有碰撞避免的载波侦听多路访问
@@ -2230,6 +2276,8 @@ $$
 > **control plane** 控制平面
 >
 > **convergence** 收敛
+>
+> **correspondent** 通信者
 >
 > **count to infinity** 无穷计数
 >
@@ -2369,6 +2417,12 @@ $$
 >
 > **first input first output(FIFO)** 先进先出
 >
+> **foreign address** 外部地址
+>
+> **foreign agent** 外部代理
+>
+> **foreign network** 外部网络
+>
 > **forward error correction(FEC)** 前向纠错
 >
 > **forwarding** 转发
@@ -2418,6 +2472,12 @@ $$
 > **high-level data link control(HDLC)** 高级数据链路控制
 >
 > **high speed packet access(HSPA)** 高速分组接入
+>
+> **home agent** 移动代理
+>
+> **home network** 归属网络
+>
+> **home subscriber server(HSS)** 归属用户服务器
 >
 > **hop by hop options** 逐跳选项
 >
@@ -2539,6 +2599,8 @@ $$
 >
 > **mobile ac hoc network(MANET)** 移动自组织网络
 >
+> **mobility management entity(MME)** 移动性管理实体
+>
 > **mobile switching center(MSC)** 移动交换中心
 >
 > **more fragment(MF)** 还有分片
@@ -2623,6 +2685,8 @@ $$
 >
 > **optional transitive** 可选传递
 >
+> **orthogonal frequency division multiplexing(OFDM)** 正交频分复用
+>
 > **output buffer** 输出缓存
 >
 > **output port** 输出端口
@@ -2630,6 +2694,8 @@ $$
 > **output queue** 输出队列
 >
 > **packet** 分组
+>
+> **packet data network gateway(P-GW)**  分组数据网络网关
 >
 > **packet loss** 分组丢包
 >
@@ -2658,6 +2724,8 @@ $$
 > **peer to peer(P2P)** 点对点
 >
 > **penultimate hop popping(PHP)** 倒数第二跳弹出
+>
+> **permanent address** 永久地址
 >
 > **persistent connection** 持续连接
 >
@@ -2782,6 +2850,8 @@ $$
 > **service set identifier(SSID)** 服务集标识符
 >
 > **serving GRPS support node(SGSN)** GRPS服务支持节点
+>
+> **serving gateway(S-GW)** 服务网关
 >
 > **shared medium** 共享媒体
 >
@@ -2915,6 +2985,8 @@ $$
 >
 > **user datagram protocol(UDP)** 用户数据报协议
 >
+> **user equipment(UE)** 用户设备
+>
 > **utilization** 利用率
 >
 > **vehicular ad hoc network(VANET)** 车载自组织网络
@@ -2924,6 +2996,8 @@ $$
 > **virtual local area network(VLAN)** 虚拟局域网
 >
 > **virtual private network(VPN)** 虚拟专用网
+>
+> **visited network** 被访网络
 >
 > **weighted fair queueing(WFQ)** 加权公平排队
 >
@@ -2944,6 +3018,8 @@ $$
 > **wireless distribution system(WDS)** 无线分布式系统
 >
 > **work-conserving queuing** 保持工作排队
+>
+> **world interoperability for microwave access(WiMAX)** 全球微波接入互操作性
 >
 > **zero configuration protocol** 零配置协议
 
@@ -2976,6 +3052,8 @@ $$
 > IPv4相关：RFC 791、RFC 950、RFC 2123、RFC 4632
 >
 > IPv6相关：RFC 1546、RFC 1752、RFC 2460、RFC 4291、RFC 7094、RFC 8200
+>
+> mobile IP相关：RFC 5944
 >
 > MPLS相关：RFC 3031、RFC 3032、RFC 3034、RFC 3035
 >
