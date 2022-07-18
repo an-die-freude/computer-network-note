@@ -425,11 +425,11 @@ $$
 
 &emsp;&emsp;视频是一系列图像以每秒二十四/三十张图像来展现。视频能被压缩，故可以比特率来权衡视频质量。
 
-&emsp;&emsp;在DASH中，视频编码为比特率不同的多个版本，每个版本都有一个不同的URL，每个版本的URL和比特率都存在HTTP服务器中的**告示文件**中。DASH运行客户端自由地切换版本。
+&emsp;&emsp;在**HTTP动态自适应流**中，视频编码为比特率不同的多个版本，每个版本都有一个不同的URL，每个版本的URL和比特率都存在HTTP服务器中的**告示文件**中。DASH运行客户端自由地切换版本。
 
 ##### 2.6.2 CDN
 
-&emsp;&emsp;**CDN**分布在多个地理位置的服务器上，并且将用户请求重定向到一个时延更低的CDN。
+&emsp;&emsp;**内容分发网络**分布在多个地理位置的服务器上，并且将用户请求重定向到一个时延更低的CDN。
 
 &emsp;&emsp;CDN分为**专用CDN**和**第三方CDN**，专用CDN由内容提供商自身拥有，第三方CDN分发多个内容提供商的内容。
 
@@ -2419,7 +2419,7 @@ $$
 >
 > **duplicate data packet** 冗余数据分组
 >
-> **dynamic adaptive streaming over HTTP(DASH)** 经HTTP的动态适应流
+> **dynamic adaptive streaming over HTTP(DASH)** HTTP动态自适应流
 >
 > **dynamic host configuration protocol(DHCP)** 动态主机配置协议
 >
