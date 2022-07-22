@@ -1515,7 +1515,7 @@ D\times 2^r\oplus R\oplus R&=nG\oplus R\\
 D\times 2^r&=nG \oplus R\\
 \end{align}
 $$
-&emsp;&emsp;显然，$R= D\times 2^r \pmod{ G}$。
+&emsp;&emsp;显然，$R= (D\times 2^r) \bmod G$。
 
 &emsp;&emsp;CRC能检测出奇数比特的差错，而且CRC能检测出小于$r+1$位的差错，在适当的假设下还可以以$1-\frac{r}{2}$的概率检测出大于$r+1$位的差错。
 
@@ -1887,7 +1887,7 @@ $$
 
 &emsp;&emsp;无线网络包括**无线主机**、**无线链路**、**基站**和**网络基础设施**。主机通过无线通信链路连接到基站或无线主机，这里的连接指的是主机位于基站的无线通信范围内且主机通过基站来中继和更大的网络。
 
-&emsp;&emsp;连接到基站的主机通常以**基础架构模式**运行，因为所有传统网络服务都是由主机通过连接到基站的网络提供。在**自组织网络**中，无线主机没有可连接的此类基础设施，主机本身必须提供这些传统网络服务。
+&emsp;&emsp;连接到基站的主机通常以**基础设施模式**运行，因为所有传统网络服务都是由主机通过连接到基站的网络提供。在**自组织网络**中，无线主机没有可连接的此类基础设施，主机本身必须提供这些传统网络服务。
 
 &emsp;&emsp;当移动主机超出一个基站额度范围并进入另一个基站的范围时，它会将其连接点更改为更大的网络，这个过程称为**切换**。
 
@@ -1902,6 +1902,12 @@ $$
 &emsp;&emsp;﹡**多跳且基于基础设施**的无线网络中有一个有线连接到更大的网络的基站，为了通过基站通信，其中部分节点需要通过其他节点中继它们的通信。
 
 &emsp;&emsp;﹡**多跳且无基础设施**的无线网络中没有基站，节点可能需要其他节点中继。若节点是移动的则称为**移动自组织网络**。若移动节点是车载的则称为**车载自组织网络**。
+
+​		**蜂窝**(技术)是蜂窝网覆盖的区域被划分为称为**小区**或**蜂窝**的多个地理覆盖区域。每个蜂窝包含一个**基站收发台**，BTS负责像其蜂窝中的移动设备发送/接收信号。
+
+​		移动设备在呼叫中将其关联从一个基站更改为另一个基站时出现**切换**。切换不仅导致移动设备关联新基站，而且导致呼叫从网络中的交换点重新路由选择到新基站。
+
+​		对于TCP，比特差错或切换导致的报文段丢失不应该减小拥塞窗口，可以通过==本地恢复==、==让TCP双方知晓无线链路==、==拆分连接==来处理这个问题。本地恢复中的目标是在比特差错发生的时间和位置将其恢复，主要通过ARQ或FEC等实现。让TCP双方知晓无线链路的目标是区分有线网络的拥塞和其它两者并仅对拥塞进行拥塞控制。拆分连接常用于蜂窝网络，将连接分成无线部分和有线部分，无线部分使用标准TCP或带有差错恢复的UDP。
 
 #### 6.1 无线链路和网络特征
 
@@ -1953,7 +1959,7 @@ $$
 
 &emsp;&emsp;在802.11中，每个无线主机都需要与AP相连才能发送或接收网络层数据报。
 
-&emsp;&emsp;在安装AP时会为AP分配一个或两个词的**服务集标识符**和一个信道号。802.11在2.4Ghz~2.485Ghz的频段内运行，在这个85MHz的频段内，802.11定义了11个部分重叠的信道，两个信道只有被4个或更多信道隔开时才不会有重叠，因此信道1、6和11的唯一的三个不重叠信道集合，同一个网络里可以安装3个802.11b AP并为这些AP分配信道1、6和11，然后将每个AP都连接到同一交换机上。
+&emsp;&emsp;在安装AP时会为AP分配一个或两个词的**服务集标识符**和一个信道号。802.11在2.4Ghz~2.485Ghz的频段内运行，在这个85MHz的频段内，802.11定义了11个部分重叠的信道，两个信道只有被4个或更多信道隔开时才不会有重叠，因此信道1、6和11的唯一的三个不重叠信道集合，同一个网络里可以安装3个802.11b AP并为这些AP分配信道1、6和11，然后将每个AP都连接到同一交换机上。两个不同ISP在同一区域都设置了AP且使用了相同的信道，若两个AP同时接收则会导致其中之一丢弃地址错误的帧，若两个AP同时发送则会导致碰撞。
 
 &emsp;&emsp;**WiFi丛林**指无线主机能从两个或多个AP接收到足够强的信号的任何物理位置。无线主机需要与AP**关联**才能加入AP所属子网并访问互联网，关联表示无线主机与AP建立一条虚拟链路。
 
@@ -1967,21 +1973,21 @@ $$
 
 ##### 6.2.2 802.11 MAC协议
 
-&emsp;&emsp;802.11的载波侦听分为物理侦听和虚拟侦听，主要使用需要侦听。无线链路存在信号衰减、干扰以及多径传播，802.11使用**网络分配向量**来实现虚拟侦听，NAV是一个微秒计时器，用来指示预计使用信道的时间，当NAV不为0时则表示信道忙碌。
+&emsp;&emsp;802.11的载波侦听分为物理侦听和虚拟侦听，主要使用虚拟侦听。802.11使用**网络分配向量**来实现虚拟侦听，NAV是一个微秒计时器，用来指示预计使用信道的时间，当NAV不为0时则表示信道忙碌。由于各种原因，帧可能无法完整地达到目的地，因此使用了类似于[rdt2.0](#3.2.2 rdt2.0)中ACK的**链路层确认**。
 
-&emsp;&emsp;802.11MAC协议中帧间都有**帧间间隔**。一般情况下，发送帧前需要等待**分布式帧间间隔**，发送ACK帧前需要等待**短帧帧间间隔**。
+&emsp;&emsp;802.11MAC协议中帧间都有**帧间间隔**。一般情况下，发送帧前需要等待**分布式帧间间隔**，发送ACK帧前需要等待**短帧帧间间隔**，重传帧时需要等待**扩展帧间间隔**。SIFS是固定值，DIFS=SIFS+2slot time。t(ACK)表示最低速度传输ACK所需时间，则EIFS=time(ACK)+SIFS+DIFS。
 
 &emsp;&emsp;802.11 MAC协议包括**分布式协调功能**、**点协调功能**和**混合协调功能**三种工作模式，其中DCF是PAF和HCF的基础，PCF是可选项，HCF提供QOS的支持。DCF采用竞争的方式接入信道，PCF采用统一分配的方式接入信道，HCF在DCF的基础上加入了QOS的支持。
 
 &emsp;&emsp;﹡DCF是站点共享信道的接入方式，接入方式是CSMA/CA，还加入了可选的短**请求发送**控制帧和短**允许发送**控制帧来避免长数据帧的碰撞。
 
-&emsp;&emsp;﹡PCF中需要一个站点作为**点协调器**，点协调器周期性地发送信标帧来广播WLAN的网络标识和管理参数，其他站点根据管理参数来设置NAV。由于信标帧通过DCF发送，点协调器必须参与信道竞争。PCF只能在**非竞争期**工作，其机制类似于[轮流协议](#6.2.3 轮流协议)中的轮询协议，点协调器轮询其他节点，轮询的节点才能传输帧，帧的长度受到限制。
+&emsp;&emsp;﹡PCF中需要一个站点作为**点协调器**，点协调器周期性地发送信标帧来广播WLAN的网络标识和管理参数，其他站点根据管理参数来设置NAV。由于信标帧通过DCF发送，点协调器必须参与信道竞争。PCF只能在**非竞争期**工作，其机制类似于[轮流协议](#5.2.3 轮流协议)中的轮询协议，点协调器轮询其他节点，轮询的节点才能传输帧，帧的长度受到限制。
 
 &emsp;&emsp;﹡HCF类似于PCF，但可以在**竞争期**工作且支持QOS。
 
 &emsp;&emsp;802.11并未实现碰撞检测，因为碰撞检测需要同时传输和侦听，由于接收信号的强度通常远小于发送信号的强度，实现碰撞检测成本较高。即使网络适配器可以同时传输和侦听(并在检测到碰撞时时中止传输)，由于隐藏终端和信号衰减的问题，网络适配器依然无法检测到所有碰撞。
 
-&emsp;&emsp;当源站点有帧待发送时需要先侦听信道，当信道空闲后需要等待DIFS，若在此期间未侦听到信号就发送帧，否则源站点像[CSMA/CD](#6.2.2.4 CSMA/CD)使用二进制指数退避算法来计算退避时间并启动**退避计时器**，但不同于CSMA/CD的是退避时间的随机区间为[0,CW)，其中CW是**竞争窗口**，侦听到的信道空闲时间至少为DIFS时，计时器才会减一(基本退避时间)。若在退避时间内侦听到信号则暂停计时器，然后会重新等待到信道空闲并在下一个DIFS后再次启动计时器(计时器时间是剩下的时间)，计时器为0时发送帧。由于各种原因，帧可能无法完整地达到目的地，因此使用了类似于[rdt2.0](#3.2.2 rdt2.0)中ACK的**链路层确认**。当目的站点收到通过CRC的帧时，它会等待SIFS后响应一个ACK帧。若源站点等待ACK帧超时则重传，在给定次数的重传后依然未收到ACK帧则丢弃帧。
+&emsp;&emsp;当源站点有帧待发送时需要先侦听信道，当信道空闲后需要等待DIFS，若在此期间未侦听到信号就发送帧，否则源站点像[CSMA/CD](#5.2.2.4 CSMA/CD)一样使用二进制指数退避算法计算退避时间并启动**退避计时器**，不同的是基本退避时间为一个时隙，退避时间的随机区间为[0,CW*slot time)，CW是**竞争窗口**，最小值是$2^4-1$，最大值是$2^{10}-1$。侦听到的信道空闲时间至少为一时隙时，计时器才会减一(时隙)。若在退避时间内侦听到信号则暂停计时器，然后会重新等待到信道空闲并在下一个DIFS后再次启动计时器(计时器时间是剩下的时间)，计时器为0时发送帧。若两个或多个站点选择了相同的退避时间则可能导致碰撞，碰撞后CW会变为原来的2倍加一。当目的站点收到通过CRC的帧时，它会等待SIFS后响应一个ACK帧。若源站点等待ACK帧超时则会等待EIFS后重传，在给定次数的重传后依然未收到ACK帧则丢弃帧。
 
 ![hidden_terminal](img/hidden_terminal.png)
 
@@ -1991,7 +1997,7 @@ $$
 
 ![collision_avoidance_using_rts_and_cts_frames](img/collision_avoidance_using_rts_and_cts_frames.png)
 
-&emsp;&emsp;尽管RTS和CTS帧有助于减少碰撞，但也引入了延迟并消耗信道资源，因此，RTS和CTS帧仅用于长数据帧的传输通道预约。实际上可以为每个无线站点设置RTS阈值，当帧的长度超过阈值时才是RTS/CTS帧，默认阈值一般是2347字节。除了解决隐藏终端，RTS和CTS帧体现了==用短帧的碰撞来避免长帧的碰撞==。
+&emsp;&emsp;尽管RTS和CTS帧有助于减少碰撞，但也引入了延迟并消耗信道资源，因此，RTS和CTS帧仅用于长数据帧的传输信道预约。实际上可以为每个无线站点设置RTS阈值，当帧的长度超过阈值时才使用RTS/CTS帧，默认阈值一般是2347字节，即不使用。除了解决隐藏终端，RTS和CTS帧体现了==用短帧的碰撞来避免长帧的碰撞==。
 
 ##### 6.2.3 802.11帧
 
@@ -2045,13 +2051,13 @@ $$
 
 #### 6.3 蜂窝互联网接入
 
-&emsp;&emsp;**蜂窝**(技术)是蜂窝网覆盖的区域被划分为称为**小区**或**蜂窝**的多个地理覆盖区域。每个蜂窝包含一个**基站收发台**，BTS负责像其蜂窝中的移动站点发送/接收信号。
+&emsp;&emsp;**蜂窝**(技术)是蜂窝网覆盖的区域被划分为称为**小区**或**蜂窝**的多个地理覆盖区域。每个蜂窝包含一个**基站收发台**，BTS负责像其蜂窝中的移动设备发送/接收信号。
 
 &emsp;&emsp;最早的几代蜂窝主要服务于语音流量。第一代(1G)是专为纯语音通信设计的模拟**频分多址**系统。最初的2G系统也是为语音而设计的，后来扩展了对数据(互联网)的支持(2.5G)。3G系统支持语音和数据，但更强调数据能力和更高速的无线接入链路。4G系统基于LTE，其特点是全IP核心网络并以$M(b/s)$速度提供语音和数据服务。
 
 &emsp;&emsp;2G蜂窝系统的GSM标准使用组合的FDM/TDM(无线电)作为空中接口。对于组合FDM/TDM系统，若将信道划分为$F$个子信道且时间划分为$T$个时隙，则该信道能够支持$F\cdot T$个并发呼叫。GSM系统由$200kHz$的频段组成，每个频段支持8个TDM呼叫。GSM以$13k(b/s)$和$12.2k(b/s)$编码语音。
 
-&emsp;&emsp;单个GSM网络的**基站控制器**通过会为数十个BTS提供服务。BSC的作用是为移动用户分配BTS无线电信道，执行**寻呼**(查找移动用户所在的蜂窝)。基站控制器及其受控的BTS共同构成一个GSM**基站系统**。
+&emsp;&emsp;单个GSM网络的**基站控制器**通过会为数十个BTS提供服务。BSC的作用是为移动设备分配BTS无线电信道，执行**寻呼**(查找移动设备所在的蜂窝)。基站控制器及其受控的BTS共同构成一个GSM**基站系统**。
 
 &emsp;&emsp;**移动交换中心**在用户授权和计费、呼叫建立和断开以及切换中发挥着决定性作用。单个MSC通常最多包含5个BSC，因此每个MSC大约有20万用户。蜂窝提供商的网络有多个MSC，其中称为网关MSC的特殊的MSC将提供商的蜂窝网络连接到更大的公共电话网络。
 
@@ -2137,10 +2143,10 @@ $$
 | ------------------------ | ------------ | ------------------------------------------------------------ |
 | Router IP address        | 32           | 发送该报文的代理的IP地址                                     |
 | type                     | 8            | 值固定为16                                                   |
-| length                   | 8            | 值为6+4N，N表示COA地址的个数                                 |
+| length                   | 8            | 值为6+4N，N表示COA的个数                                     |
 | sequence number          | 16           | 代理启动后的第一个通告序列号必须是0，之后每次加一，但0xFFFF之后必须是256，这样可以区分序列号减小是由于重启还是达到序列号最大值 |
 | registration lifetime    | 16           | 注册的最大生命周期(以秒为单位)。0xFFFF表示无穷大             |
-| registration required(R) | 1            | 此网络中的移动节点必须向外部代理注册。若移动节点无法(使用DHCP)在外部网络中获取COA地址且无法承担自身外部代理的功能，则无需向外地代理注册 |
+| registration required(R) | 1            | 此网络中的移动节点必须向外部代理注册。若移动节点无法(使用DHCP)在外部网络中获取COA且无法承担自身外部代理的功能，则无需向外地代理注册 |
 | busy(B)                  | 1            | 代理不再接受新移动节点的注册                                 |
 | home agent(H)            | 1            | 代理为它所在网络的归属代理                                   |
 | foreign agent(F)         | 1            | 代理为它所在网络的外部代理                                   |
@@ -2151,7 +2157,7 @@ $$
 | U                        | 1            | 支持UDP                                                      |
 | X                        | 1            | 支持撤销注册                                                 |
 | I                        | 1            | 支持区域注册                                                 |
-| COA address              | 32N          | 外部代理提供COA地址列表，移动节点选择一个作为其COA地址       |
+| COA address              | 32N          | 外部代理提供COA列表，移动节点选择一个作为其COA               |
 
 ​		移动节点可以通过代理请求直接广播ICMP报文(type=10)，收到该报文的代理将==单播==一个代理通告。
 
@@ -2161,13 +2167,239 @@ $$
 
 ​		2）外部代理收到注册报文后记录移动节点的永久IP地址，将注册请求报文再封装并以隧道的形式发送给归属代理，报文同样由UDP数据报承载并发送端434端口。
 
-​		3）归属代理收到注册请求并检测其真实性和正确性。归属代理将移动节点永久IP地址和COA地址绑定，然后将注册响应再封装并以隧道的形式发送给外部代理，报文中包括归属代理的IP地址、移动节点的永久IP地址、实际注册生命周期以及请求的注册标识。
+​		3）归属代理收到注册请求并检测其真实性和正确性。归属代理将移动节点永久IP地址和COA绑定，然后将注册响应再封装并以隧道的形式发送给外部代理，报文中包括归属代理的IP地址、移动节点的永久IP地址、实际注册生命周期以及请求的注册标识。
 
 ​		4）外部代理收到再封装的注册响应后拆封并转发给移动节点。
 
 #### 6.6 蜂窝网络中的移动性
 
-### 附录1 专业术语
+​		在GSM中移动设备的归属网络称为该移动设备的**归属公共陆地移动网络**，这里简称归属网络，而移动设备当前所在的PLMN简称为被访网络。
+
+​		归属网络维护一个称为**归属位置寄存器**的数据库，其中包含该网络中每个移动设备的永久手机号码和概要信息以及用户当前位置的信息，因此当移动设备漫游到另一个提供商的蜂窝网络中，HLR中包含足够的信息来获取移动设备被呼叫时应该路由选择到的被访网络的的IP地址。当移动设备被呼叫时，通信者会联系归属网络中一个称为**网关移动交换中心**的交换机，这里简称为**归属MSC**。
+
+​		被访网络维护一个称为**拜访位置寄存器**的数据库，其中包含该网络中每个移动设备的表项，VLR表项因此随着移动设备加入或退出网络而新增或删除。VLR通常与MSC位于同一位置，MSC协调到达或离开被访网络的呼叫的建立。
+
+​		在实际中，提供商的蜂窝网络作为其用户的归属网络以及其他提供商的蜂窝网络的用户的被访网络。
+
+##### 6.6.1 移动设备呼叫的路由选择
+
+​		当移动设备切换或进入一个新VLR覆盖的被访网络时，必须和VLR交换信令报文来向被访网络注册。被访网络的VLR再向移动设备的HLR发送位置更新请求报文来告知HLR可用于联系移动设备的**动态漫游号**或VLR地址，VLR从HLR获取移动设备的信息并确定被访网络应向移动设备提供对应的服务(如果有)。MSRN的功能类似于COA，对通信者和移动设备都隐藏。
+
+![place_a_call_to_a_mobile_user_with_indirect_routing](img\place_a_call_to_a_mobile_user_with_indirect_routing.png)
+
+​		与移动IP一样，GSM采用了间接路由选择，先将通信者的呼叫路由选择到移动节点的归属网络，再到被访网络。
+
+​		1）通信者拨打移动设备的电话号码。呼叫通过**公共交换电话网络**到达移动设备的归属MSC。
+
+​		2）归属MSC收到呼叫后查询HLR来确定移动设备的位置。在最简单的情况下，HLR返回MSRN。若HLR中没有MSRN则返回VLR在被访网络中的地址。
+
+​		3）归属MSC获得MSRN后，通过PSTN到达被访网络的MSC建立第二段呼叫来完成呼叫。
+
+##### 6.6.2 GSM中的切换
+
+​		在与基站关联时，移动设备会定期测量关联基站的信标信号强度与其他基站的信标信号强度，结果以每秒一次或两次的频率报告给关联基站，关联基站根据测量结果、附近蜂窝的移动设备负载以及其他因素来切换。GSM标准中没有规定执行切换的具体算法。
+
+![handoff_between_base_stations_with_a_common_msc](img\handoff_between_base_stations_with_a_common_msc.png)
+
+​		1）旧BS通知被访MSC将移动设备执行切换和将切换到的BS(组)。
+
+​		2）被访MSC发起到新BS的路径建立，分配承载重新路由的呼叫所需的资源以及用信令告知新BS切换即将发生。
+
+​		3）新BS分配并激活一个无线信道供移动设备使用。
+
+​		4）新BS向被访MSC和旧BS发生信令通知已建立被访MSC到新BS路径并且应该通知移动设备即将发生的切换。新BS提供移动设备与新BS关联所需的所有信息。
+
+​		5）移动设备被告知它应该执行切换。之前移动设备并不知道网络以及为切换做好所有底层工作。
+
+​		6）移动设备和新BS交换一个或多个报文来完全激活新BS中的信道。
+
+​		7）移动设备向新BS发生一个切换完成报文，然后该报文被转发到被访MSC。被访MSC通过新BS将正在进行的呼叫重新路由到移动设备。
+
+​		8）到旧BS的路径分配的资源随后释放。
+
+​		GSM中定义了类似于[锚外部代理](#6.4.2 移动节点的直接路由选择)的**锚MSC**，锚MSC是呼叫开始时移动设备的被访MSC，它在整个呼叫持续过程中保持不变。无论移动设备在呼叫的过程中转移多少次，呼叫都是从归属MSC路由选择到锚MSC再到移动设备当前的被访MSC，因此，通信者和移动设备间最多有3个MSC。除了保持锚MSC到当前被访MSC的单MSC跳，另一种方法是直接将移动设备被访MSC链接起来(出现在IS-41蜂窝网络中)，每当移动设备移动到一个MSC后，让旧MSC将呼叫转发给新MSC。
+
+### 第七章 网络安全
+
+​		**安全通信**应该具有==保密==、==报文完整==、==端点身份验证==、==运行安全==的特点。
+
+#### 7.1 密码学
+
+​		使用**加密算法**对**明文**进行加密后生成**密文**。
+
+​		在**对称加密**中双方使用相同的密钥。在**非对称加密**中使用**公钥**和**密钥**，任何人都可以获得公钥。
+
+​		若只能得到截取的密文，也不了解明文内容，统计分析有助于对加密方案的**唯密文攻击**。若能得到部分明文与密文的匹配关系，通过这种方式的攻击称为**已知明文攻击**。在选择明文攻击中，能选择明文信息并获取对于的密文，但并不代表能获取加密的过程。
+
+##### 7.1.1 对称加密
+
+​		**凯撒密码**加密字母语时，将每个字母在字母表中该字母后第$k$个字母与之替换。
+$$
+x=(x+k) \bmod 26
+$$
+​		凯撒密码的改进版是**单表替换密码**，但它不是根据常规模式进行替换，任何字母可以替换其他字母，只需每个字母有唯一的替换字母即可。
+
+![a_monoalphabetic_cipher](img\a_monoalphabetic_cipher.png)
+
+​		单表替换密码的字母配对看似很多，但通过对明文语言进行统计分析后可以发现e和t出现的频率最高且特定的两个和三个字母经常一起出现，实际上破解更容易一些。
+
+​		单表替换密码的的改进版是**多表替换密码**。多表替换密码的基本思想是使用多个单表替换密码，一个单表替换密码用于加密明文中特定位置的字母。因此，明文中不同位置出现的字母可能以不同的方式加密。
+
+​		现代对称加密大致分为**流加密**和**块加密**。块加密用于PGP、SSL和IPsec等多种协议的加密中。
+
+![an_example_of_block_cipher](img\an_example_of_block_cipher.png)
+
+​		在块加密中，明文以$k$位块进行处理。为了对块进行加密，使用一对一映射将明文的$k$位映射到密文的$k$位块，因此每种输入都有不同的输出。块密码通常使用函数模拟随机排列表。以64位块为例并假设置乱函数为公共已知，将64位块分成8个小块，每个小块由8位组成，每个小块由一个8位到8位的映射表进行映射，该表具有的大小可管理的映射长度，然后这8个输出块重新组装成64位块并置乱，最后将结果作为输入再循环$n$次该过程。循环的目的是使每个输入位都影响最后输出位的大部分乃至全部。这种块密码算法的密钥是8张映射表。
+
+​		诸如DES、3DES和AES的块密码都使用位串作为密钥，密钥决定了映射表的映射和算法内部的排列。DES使用了具有56位密钥的64位块，AES使用了128位块且能够使用128、192和256位的密钥进行操作。
+
+​		报文明文中可能存在多个相同的明文块，使用块密码产生的密文也相同，因此可能猜出明文并根据相同的密文块和协议结构相关的知识解密整个报文。为了解决这个问题，可以在密文中混合一些随机性使得相同的明文生成不同的密文。
+
+​		密钥为$S$的块密码加密算法表示为$K_S$，第$i$个明文块和密文块分布表示为$m(i)$和$c(i)$。发送端根据第$i$块生成随机的$k$位数$r(i)$且计算$c(i)=K_s(m(i)\oplus r(i))$。接收端能接收到$c(i)$和$r(i)$，根据$m(i)=K_s(c(i)\oplus r(i))$可以进行解密。但这样需要传输额外的随机数，为了解决这一问题，块密码使用了**密码块链接**，基本思想是仅第一个报文发送一个随机值，然后让发送端和接收端使用计算出的密文代替后继的随机数。
+
+​		1）在加密报文前，发送端生成一个随机的$k$位串，称为**初始向量**，用$c(0)$表示。发送端以==明文==发送IV给接收端。
+
+​		2）对第一个块，发送端计算$m(1)\oplus c(0)$，然后通过块密码得到对应的密文$c(1)=K_S(m(1)\oplus c(0))$并发送。
+
+​		3）对于第$i$个块，发送端根据$c(i)=K_S(m(i)\oplus c(i-1))$生成第$i$个密文块。
+
+##### 7.1.2 非对称加密
+
+​		公钥和私钥分别表示为$K^+_B$和$K^-_B$。报文$m$通过公钥和众所周知的加密算法加密后得到密文$K^+_B(m)$，密文通过私钥和众所周知的解密算法进行解密$K^-_B(K^+_B(m))=m$。私钥加密后也可以用公钥解密$K^+_B(K^-_B(m))=m$。
+
+​		RSA算法广泛使用了模$n$运算。
+$$
+\begin{align}
+[(a \bmod n)\cdot (b \bmod n)]&=(a\cdot b)\bmod n\\
+(a \bmod n)^d \bmod n&=a^d\bmod n
+\end{align}
+$$
+​		为了生成RSA的公钥和密钥，首先选择两个大素数$p$和$q$，$p$和$q$越大，破解RSA越困难，加密和解密的时间也越长。然后计算公共模数$n=pq$和欧拉函数$\varphi(n)=(p-1)(q-1)$。选择一个小于$n$且与$\varphi(n)$没有(非1的)公因数的公钥指数$e$，再选择$d$使$ed\bmod \varphi(n)=1$成立。公钥$K^+_B$是一对数$(n,e)$，私钥$K^-_B$是一对数$(n,d)$。实际中，RSA的$n$一般是1024位和2048位，$e$常使用3、17和65537。
+
+​		对于明文$m(m<n)$的密文$c=m^e \bmod n$，解密时先对该值进行$d$次幂运算，再做模$n$运算。
+$$
+\begin{align}
+(m^e \bmod n)^d \bmod n&=m^{ed}\bmod n\\
+&=m^{(ed \mod \varphi(n))} \bmod n\\
+&=m^1 \bmod n\\
+&=m
+\end{align}
+$$
+​		使用私钥加密同样可以用公钥解密$(m^d \bmod n)^e \bmod n=m^{ed}\bmod n=m$。
+
+​		RSA的指数运算比较耗时，DES则快很多，因此在实际应用中RSA常与对称加密结合使用。首先选择加密数据的密钥，称为**会话密钥**，表示为$K_S$，该密钥是对称加密中使用的共享对称密钥。再使用RSA密钥对会话密钥进行加密$c=(K_S)^e \bmod n$。最后对方收到后使用私钥进行解密可以获得会话密钥。
+
+#### 7.2 报文完整性和数字签名
+
+​		散列函数输入$m$，可以得到一个固定长度的字符串$H(m)$。**密码散列函数**的特点是不同的输入不能得到相同的输出。
+
+​		在MD5散列算法中，首先添加一个64位数来表示明文长度，再填充长度(添加1并在后面添加足够的0)，直到输入满足一定的条件，初始化累加器并进行循环，在循环中对报文的16子块进行4轮处理。另一个常用散列算法是SHA。
+
+![message_authentication_code](img\message_authentication_code.png)
+
+​		为了执行**报文完整性**，除了使用密码散列函数，还需要一个称为**认证密钥**的共享密钥$s$。发送端用报文$m$和$s$级联生成$m+s$并计算散列值$H(m+s)$，散列值$H(m+s)$称为**报文认证码**。然后将MAC附加到$m$生成扩展报文$(m,H(m+s))$并发送。接收端收到扩展报文$(m,h)$，由于接收端也有$s$，若$H(m+s)=h$则表示一切正常。
+
+​		常用的MAC有HMAC，它能够与MD5或SHA一起使用。HMAC实际上通过散列函数计算数据和认证密钥两次。在LS算法中，需要以某种方式将认证密钥分发给AS内的每个路由器，这个可以通过物理访问来完成此操作或直接使用路由器自带的公钥。
+
+​		可以使用==非对称加密和散列函数==来进行**数字签名**，发送端先使用散列函数计算原始明文获得散列值，然后再对散列值用私钥进行加密来进行数字签名并发送报文。接收端收到报文后使用公钥对数字签名进行解密然后再和原始明文的散列值进行比较，若相等则表示一切正常。
+
+​		数字签名的一个重要应用是**公钥认证**，即证明公钥属于特点的实体。将公钥和特定实体绑定通常由**认证中心**完成，其功能是证实一个实体的真实身份，一旦证实了身份后，CA会生成一个其身份和实体的公钥绑定的**证书**，该证书包含公钥和公钥所有者的全局唯一标识信息(人名或IP地址等)，CA会对这个证书进行数字签名。
+
+​		ITU和IETF都研发了用于CA的系列标准。
+
+| 字段名             | 描述                                       |
+| ------------------ | ------------------------------------------ |
+| version            | X.509规范的版本号                          |
+| serial number      | CA颁发的证书的唯一标识符                   |
+| signature          | 规定CA用于签署证书的算法                   |
+| issuer name        | 颁发此证书的CA的身份(采用DN格式)           |
+| validity period    | 证书有效期的时间范围                       |
+| subject name       | 其公钥与该证书相关连的实体身份(采用DN格式) |
+| subject public key | 公钥以及使用的公钥算法及其参数的指示       |
+
+#### 7.3 端点认证
+
+
+
+### 附录1 相关RFC
+
+> 802.11相关：RFC 8325
+>
+> ARP相关：RFC 826、RFC 1180
+>
+> BGP相关：RFC 4271
+>
+> BOOTP相关：RFC 951、RFC 1542
+>
+> cookie相关：RFC 6265
+>
+> CA相关：RFC1421、RFC 1422
+>
+> DCCP相关：RFC 4340
+>
+> DHCP相关：RFC 2131、RFC 2132
+>
+> DIAMETER相关：RFC 3588
+>
+> DNS相关：RFC 1034、RFC 1035、RFC 2136、RFC 3007
+>
+> email相关：RFC 5322
+>
+> HMAC相关：RFC 2104
+>
+> HTTP相关：RFC 1945、RFC 2616、RFC 7540
+>
+> ICMP相关：RFC 792、RFC 1256
+>
+> IMAP相关：RFC 3501
+>
+> IPv4相关：RFC 791、RFC 950、RFC 2123、RFC 4632
+>
+> IPv6相关：RFC 1546、RFC 1752、RFC 2460、RFC 4291、RFC 7094、RFC 8200
+>
+> IP隧道相关：RFC 2003、RFC 2004
+>
+> LDAP相关：RFC 4514
+>
+> MD4相关：RFC 1320
+>
+> MD5相关：RFC 1321
+>
+> mobile IP相关：RFC 5944
+>
+> MPLS相关：RFC 3031、RFC 3032、RFC 3034、RFC 3035
+>
+> OSPF相关：RFC 1584、RFC 2328
+>
+> RADIUS相关：RFC 2865
+>
+> POP3相关：RFC 1939
+>
+> port相关：RFC 1700、RFC 3232
+>
+> router相关：RFC 3439
+>
+> SCTP相关：TFC 3286、RFC 4960
+>
+> SMTP相关：RFC 821、RFC 1425、RFC 1511、RFC 1521、RFC 1522、RFC 5321 
+>
+> SNMP相关：RFC 3410、RFC 3416
+>
+> TE相关：RFC 2702、RFC 3272、RFC 3346
+>
+> telnet相关：RFC 854
+>
+> TFRC相关：RFC 5348
+>
+> TCP相关：RFC 793、RFC 1122、RFC 1323、RFC 2018、RFC 2581、RFC 3168、RFC 3390、RFC 3649、RFC 3782、RFC 5681
+>
+> UDP相关：RFC 768
+>
+> 加密算法相关：RFC 1321、RFC 2420、RFC 3447
+>
+> 移动IP相关：RFC2002、RFC 5944
+
+### 附录2 专业术语
 
 > **access point(AP)** 访问接入点
 >
@@ -2189,6 +2421,8 @@ $$
 >
 > **address resolution protocol(ARP)** 地址解析协议
 >
+> **advanced encryption standard(AES)** 高级加密标准
+>
 > **agent discovery** 代理发现
 >
 > **agent solicitation** 代理请求
@@ -2197,15 +2431,19 @@ $$
 >
 > **alternating bit protocol** 比特交替协议
 >
-> **anchor foreign agent** 锚外部网络
+> **anchor ** 锚
 >
 > **anycast** 任播
 >
 > **application programming interface(API)** 应用程序编程接口
 >
+> **asymmetric encryption** 非对称加密
+>
 > **asynchronous transfer mode(ATM)** 异步传输模式
 >
 > **atomic aggregate** 原子聚合
+>
+> **authentication key** 认证密钥
 >
 > **automatic repeat request(ARQ)** 自动重传请求
 >
@@ -2243,6 +2481,8 @@ $$
 >
 > **blade** 刀片
 >
+> **block cipher** 块加密
+>
 > **bidirectional data transfer** 双向/全双工数据传输
 >
 > **binary exponential back off** 二进制指数退避
@@ -2279,9 +2519,15 @@ $$
 >
 > **carrier sense multiple access with collision detection(CSMA/CD)** 带有碰撞检测的载波侦听多路访问
 >
+> **Caesar cipher** 凯撒密码
+>
 > **cellular** 蜂窝
 >
 > **centralized routing algorithm** 集中式路由选择算法
+>
+> **certificate** 证书
+>
+> **certification authority(CA)** 认证中心
 >
 > **channel partitioning protocol** 信道划分协议
 >
@@ -2290,6 +2536,14 @@ $$
 > **chipping rate** 码片速率
 >
 > **choke packet** 抑制分组
+>
+> **chosen-plaintext attack** 选择明文攻击
+>
+> **cipher block chaining(CBC)** 密码块链接
+>
+> **ciphertext** 密文
+>
+> **ciphertext-only attack** 唯密文攻击
 >
 > **circuit** 电路
 >
@@ -2345,6 +2599,8 @@ $$
 >
 > **countdown timer** 倒数计时器
 >
+> **cryptographic hash function** 密码散列函数
+>
 > **cumulative acknowledgement** 累积确认
 >
 > **customer** 客户
@@ -2356,6 +2612,8 @@ $$
 > **data center network** 数据中心网络
 >
 > **data center TCP(DCTCP)** 数据中心TCP
+>
+> **data encryption standard(DES)** 数据加密标准
 >
 > **data over cable service interface specification(DOCSIS)** 有线电缆数据服务接口规范
 >
@@ -2395,15 +2653,19 @@ $$
 >
 > **digital subscriber line(DSL)** 数字用户线
 >
+> **digital signature** 数字签名
+>
 > **direct sequence wideband CDMA(DS-WCDMA)** 直接序列宽带码分多址
 >
 > **distance vector(DV)** 距离向量
+>
+> **distinguished name(DN)** 专用名称
 >
 > **distributed application** 分布式应用程序
 >
 > **distributed coordination function(DCF)** 分布式协调功能
 >
-> **distributed inter-frame space(DIFS)** 分布式帧间间隔
+> **distributed interframe space(DIFS)** 分布式帧间间隔
 >
 > **distribution time** 分发时间
 >
@@ -2452,6 +2714,8 @@ $$
 > **explicit congestion notification(ECN)** 显式拥塞通知
 >
 > **extend simple mail transfer protocol(ESMTP)** 扩展简单邮件传输协议
+>
+> **extended interframe space(EIFS)** 扩展帧间间隔
 >
 > **external BGP(EBGP)** 外部BGP
 >
@@ -2511,6 +2775,8 @@ $$
 >
 > **gateway GRPS support node(GGSN)** GRPS网关支持节点
 >
+> **gateway mobile services switching center(GMSC)** 网关移动交换中心
+>
 > **general packet radio service(GRPS)** 通用分组无线服务
 >
 > **geographically closest** 地理上最近
@@ -2527,6 +2793,8 @@ $$
 >
 > **hand off** 切换
 >
+> **hash-based message authentication code(HMAC)** 散列报文认证码
+>
 > **head of the line(HOL)** 线路前部
 >
 > **header line** 首部行
@@ -2536,6 +2804,8 @@ $$
 > **high speed packet access(HSPA)** 高速分组接入
 >
 > **home agent** 移动代理
+>
+> **home location register(HLR)** 归属位置寄存器
 >
 > **home network** 归属网络
 >
@@ -2559,25 +2829,29 @@ $$
 >
 > **hyper text transfer protocol(HTTP)** 超文本传输协议
 >
-> **infrastructure mode** 基础架构模式
+> **infrastructure mode** 基础设施模式
 >
 > **ingress port** 输入端口
 >
 > **initial sequence number(ISN)** 初始序号
 >
+> **initialization vector(IV)** 初始向量
+>
 > **input port** 输入端口
 >
 > **instantaneous throughput** 瞬时吞吐量
 >
-> **inter-autonomous system routing protocol** 自治系统间路由选择协议
+> **interframe spacing(IFS)** 帧间间隔
 >
-> **inter-frame spacing(IFS)** 帧间间隔
+> **inter-autonomous system routing protocol** 自治系统间路由选择协议
 >
 > **intermediate system to intermediate system(IS-IS)** 中间系统到中间系统
 >
 > **internal BGP(IBGP)** 内部BGP
 >
 > **internal router** 内部路由器
+>
+> **international telecommunication union(ITU)** 国际电信联盟
 >
 > **internet control message protocol(ICMP)** 互联网控制报文协议
 >
@@ -2611,11 +2885,15 @@ $$
 >
 > **least cost path** 最低成本路径
 >
+> **lightweight directory access protocol(LDAP)** 轻型目录访问协议
+>
 > **link layer switch** 链路层交换机
 >
 > **link state(LS)** 链路状态
 >
 > **link state advertisement(LSA)** 链路状态通告
+>
+> **known-plaintext attack** 已知明文攻击
 >
 > **load distribution** 负载分配
 >
@@ -2655,15 +2933,23 @@ $$
 >
 > **maximum transmission unit(MTU)** 最大传输单元
 >
-> **modular data center(MDC)** 模块化数据中心
->
 > **message** 报文
 >
+> **message authentication code(MAC)** 报文认证码
+>
+> **message integrity** 报文完整性
+>
+> **modular data center(MDC)** 模块化数据中心
+>
 > **mobile ac hoc network(MANET)** 移动自组织网络
+>
+> **mobile station roaming number(MSRN)** 动态漫游号
 >
 > **mobility management entity(MME)** 移动性管理实体
 >
 > **mobile switching center(MSC)** 移动交换中心
+>
+> **monoalphabetic cipher** 单表替换密码
 >
 > **more fragment(MF)** 还有分片
 >
@@ -2817,6 +3103,8 @@ $$
 >
 > **polling protocol** 轮询协议
 >
+> **polyalphabetic encryption** 多表替换密码
+>
 > **post office protocol-version 3(POP3)** 第三版邮局
 >
 > **precedence** 优先级
@@ -2834,6 +3122,16 @@ $$
 > **provider** 提供商
 >
 > **physical medium** 物理媒体
+>
+> **public land mobile network(PLMD)** 公共陆地移动网络
+>
+> **public key** 公钥
+>
+> **public key certification** 公钥认证
+>
+> **public key infrastructure(PKI)** 公钥基础设施
+>
+> **public switched telephone network(PSTN)** 公共交换电话网络
 >
 > **pull protocol** 拉协议
 >
@@ -2895,6 +3193,8 @@ $$
 >
 > **routing processor** 路由选择处理器
 >
+> **security hash algorithm(SHA)** 安全散列算法
+>
 > **secure shell(SSH)** 安全外壳
 >
 > **segment** 报文段
@@ -2915,9 +3215,11 @@ $$
 >
 > **serving gateway(S-GW)** 服务网关
 >
+> **session key** 会话密钥
+>
 > **shared medium** 共享媒体
 >
-> **short inter-frame spacing(SIFS)** 短帧间间隔
+> **short interframe spacing(SIFS)** 短帧间间隔
 >
 > **shortest path** 最短路径
 >
@@ -2957,6 +3259,8 @@ $$
 >
 > **store and forward transmission** 存储转发传输
 >
+> **stream cipher** 流加密
+>
 > **stream control transmission protocol(SCTP)** 流控制传输协议
 >
 > **structure of management information(SMI)** 管理信息结构
@@ -2968,6 +3272,8 @@ $$
 > **switching fabric** 交换结构
 >
 > **switch poisoning** 交换机毒化
+>
+> **symmetrical encryption** 对称加密
 >
 > **tag protocol identifier(TPID)** 标签协议标识符
 >
@@ -3081,72 +3387,10 @@ $$
 >
 > **wireless distribution system(WDS)** 无线分布式系统
 >
+> **visitor location register(VLR)** 拜访位置寄存器
+>
 > **work-conserving queuing** 保持工作排队
 >
 > **world interoperability for microwave access(WiMAX)** 全球微波接入互操作性
 >
 > **zero configuration protocol** 零配置协议
-
-### 附录2 相关RFC
-
-> ARP相关：RFC 826、RFC 1180
->
-> BGP相关：RFC 4271
->
-> BOOTP相关：RFC 951、RFC 1542
->
-> cookie相关：RFC 6265
->
-> DCCP相关：RFC 4340
->
-> DHCP相关：RFC 2131、RFC 2132
->
-> DIAMETER相关：RFC 3588
->
-> DNS相关：RFC 1034、RFC 1035、RFC 2136、RFC 3007
->
-> email相关：RFC 5322
->
-> HTTP相关：RFC 1945、RFC 2616、RFC 7540
->
-> ICMP相关：RFC 792、RFC 1256
->
-> IMAP相关：RFC 3501
->
-> IPv4相关：RFC 791、RFC 950、RFC 2123、RFC 4632
->
-> IPv6相关：RFC 1546、RFC 1752、RFC 2460、RFC 4291、RFC 7094、RFC 8200
->
-> IP隧道相关：RFC 2003、RFC 2004
->
-> mobile IP相关：RFC 5944
->
-> MPLS相关：RFC 3031、RFC 3032、RFC 3034、RFC 3035
->
-> OSPF相关：RFC 1584、RFC 2328
->
-> RADIUS相关：RFC 2865
->
-> POP3相关：RFC 1939
->
-> port相关：RFC 1700、RFC 3232
->
-> router相关：RFC 3439
->
-> SCTP相关：TFC 3286、RFC 4960
->
-> SMTP相关：RFC 821、RFC 1425、RFC 1511、RFC 1521、RFC 1522、RFC 5321 
->
-> SNMP相关：RFC 3410、RFC 3416
->
-> TE相关：RFC 2702、RFC 3272、RFC 3346
->
-> telnet相关：RFC 854
->
-> TFRC相关：RFC 5348
->
-> TCP相关：RFC 793、RFC 1122、RFC 1323、RFC 2018、RFC 2581、RFC 3168、RFC 3390、RFC 3649、RFC 3782、RFC 5681
->
-> UDP相关：RFC 768
->
-> 移动IP相关：RFC2002、RFC 5944
